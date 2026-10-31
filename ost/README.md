@@ -15,6 +15,7 @@ Les ennemis utilisent les mêmes fichiers quand ils déclenchent leur pouvoir, a
 | `gravite-zero/` | Puits stellaire (Gravité Zéro) | Joué à l'ouverture du puits, coupé à l'implosion. |
 | `spectre-lunaire/` | Voile lunaire (Spectre Lunaire) | Joué quand tu deviens invisible, coupé quand tu réapparais. |
 | `ruche-ambre/` | Essaim (Ruche d'Ambre) | Joué à l'apparition des drones, coupé quand ils disparaissent. |
+| `pantin-pourpre/` | Possession (Pantin Pourpre) | Joué quand tu prends possession d'un ennemi, coupé quand tu le relâches. |
 | `ancre-nomade/` | Ancrage (Ancre Nomade) | Joué à chaque téléportation (poser un marqueur garde le petit son par défaut). |
 | `rafale/` | Rafale (Toutes les Stands) | Joué en boucle tant que tu maintiens la rafale, coupé dès que tu la relâches. Commun à tous les Stands. |
 

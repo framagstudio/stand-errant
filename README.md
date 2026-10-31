@@ -13,6 +13,10 @@ Jeu 2D jouable dans le navigateur, rendu avec WebGPU. Choisis un Stand parmi dix
 | Temple du Sablier | Pièges à piques qui blessent aussi les ennemis, sables mouvants, oasis qui soignent. Frapper le Grand Sablier ralentit les ennemis. |
 | Fonderie Néon | Lave, tapis roulants, sols électriques par cycles, disjoncteurs qui coupent le courant, portails entre les coins de l'usine. |
 
+## Sbires et blessures
+
+En plus des utilisateurs de Stand, chaque carte abrite des sbires sans Stand : des spadassins à l'épée et des tireurs au pistolet. Leurs coups peuvent te faire perdre un bras (rafale plus faible) ou une jambe (déplacement plus lent). Les zones de soin régénèrent un membre toutes les 4 secondes, la Floraison du Jardin Fractal les régénère tous, et tout revient quand tu te réveilles après un K.O.
+
 ## Commandes
 
 | Action | Clavier | Mobile |
