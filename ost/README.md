@@ -17,6 +17,12 @@ Les ennemis utilisent les mêmes fichiers quand ils déclenchent leur pouvoir, a
 | `ruche-ambre/` | Essaim (Ruche d'Ambre) | Joué à l'apparition des drones, coupé quand ils disparaissent. |
 | `pantin-pourpre/` | Possession (Pantin Pourpre) | Joué quand tu prends possession d'un ennemi, coupé quand tu le relâches. |
 | `ancre-nomade/` | Ancrage (Ancre Nomade) | Joué à chaque téléportation (poser un marqueur garde le petit son par défaut). |
+| `take-on-me/` | Croquis vivant (Take On Me) | Joué à l'aplatissement en croquis, coupé quand tu reprends forme. |
+| `pinball-wizard/` | Cinétique de flipper (Pinball Wizard) | Joué en entier à chaque bumper posé. |
+| `paint-it-black/` | Ancrage d'ombre (Paint It Black) | Joué quand l'ombre part, coupé quand elle est relâchée. |
+| `dont-stop-me-now/` | Locomotive humaine (Don't Stop Me Now) | Joué au départ de la course, coupé à l'arrêt. |
+| `cutting-crew/` | Découpe d'écran (Cutting Crew) | Joué en entier quand tu traces la ligne de coupe. |
+| `plastic-beach/` | Polystyrène statique (Plastic Beach) | Joué en entier quand les billes sont libérées. |
 | `rafale/` | Rafale (Toutes les Stands) | Joué en boucle tant que tu maintiens la rafale, coupé dès que tu la relâches. Commun à tous les Stands. |
 
 Ce dossier est servi publiquement sur GitHub Pages : n'y mets que des sons que tu as le droit de diffuser.

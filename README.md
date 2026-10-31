@@ -17,6 +17,8 @@ Jeu 2D jouable dans le navigateur, rendu avec WebGPU. Choisis un Stand parmi dix
 
 En plus des utilisateurs de Stand, chaque carte abrite des sbires sans Stand : des spadassins à l'épée et des tireurs au pistolet. Leurs coups peuvent te faire perdre un bras (rafale plus faible) ou une jambe (déplacement plus lent). Les zones de soin régénèrent un membre toutes les 4 secondes, la Floraison du Jardin Fractal les régénère tous, et tout revient quand tu te réveilles après un K.O.
 
+Le nombre d'utilisateurs de Stand, de spadassins et de tireurs se règle dans Paramètres → Ennemis.
+
 ## Commandes
 
 | Action | Clavier | Mobile |
@@ -24,7 +26,7 @@ En plus des utilisateurs de Stand, chaque carte abrite des sbires sans Stand : d
 | Marcher | ZQSD / WASD / flèches | Joystick |
 | Rafale | J ou Espace (maintenu) | Bouton Rafale |
 | Pouvoir (appuyer à nouveau pour l'arrêter) | K ou Maj | Bouton Pouvoir |
-| Téléportation (Ancre Nomade) | L | Bouton Téléport |
+| Action secondaire : téléport (Ancre Nomade), flipper (Pinball Wizard), claquement de doigts (Plastic Beach) | L | Bouton dédié |
 | Son | M | — |
 | Pause, paramètres, retour au menu | Échap | Bouton Pause |
 
