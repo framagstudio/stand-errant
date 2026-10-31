@@ -575,8 +575,8 @@ function startTimeStop(by,x,y,dur,silent){
 }
 function updateVis(dt){
   const v=S.vis;const Rmax=Math.hypot(VW,VH)/zoom*.6+80;
-  if(v.t>=0){v.t+=dt;const g=.5;
-    v.r=v.t<g?Rmax*Math.pow(v.t/g,.7):v.t<g+.4?Rmax*(1-(v.t-g)/.4):0;
+  if(v.t>=0){v.t+=dt;const g=.5,grow=2.5,shrink=2.4;/* cercle de l'arrêt du temps : 2,5 s d'expansion puis 2,4 s de retour (4,9 s au total) */
+    v.r=v.t<grow?Rmax*Math.pow(v.t/grow,.7):v.t<grow+shrink?Rmax*(1-(v.t-grow)/shrink):0;
     if(v.end<0)v.amount=Math.min(1,v.t/g);}
   if(v.end>=0){v.end+=dt;v.amount=Math.max(0,1-v.end/.35);v.flash=v.end<.14?(1-v.end/.14)*.3:0;
     if(v.end>.4){v.t=-1;v.end=-1;v.amount=0;v.r=0;v.flash=0}}
