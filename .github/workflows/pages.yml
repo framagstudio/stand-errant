@@ -1,0 +1,44 @@
+name: Déployer sur GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lister les musiques du dossier music/
+        run: |
+          python3 - <<'PY'
+          import json, os
+          exts = ('.mp3', '.ogg', '.wav', '.m4a', '.flac', '.opus', '.aac')
+          files = sorted((f for f in os.listdir('music') if f.lower().endswith(exts)), key=str.lower)
+          with open('music/tracks.json', 'w', encoding='utf-8') as fh:
+              json.dump(files, fh, ensure_ascii=False)
+          print('Morceaux :', files)
+          PY
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
