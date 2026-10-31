@@ -254,10 +254,10 @@ const ABIL_DEF={chrono:{cd:16,dur:5},foudre:{cd:8,dur:3},jardin:{cd:12,dur:3.2},
 const DUR_LABEL={chrono:"Durée de l'arrêt du temps",foudre:"Durée de la forme électrique",jardin:"Durée de l'enracinement",miroir:"Durée du bouclier",
   gravite:"Délai avant l'implosion",spectre:"Durée de l'invisibilité",ruche:"Durée de l'essaim"};
 const CANCEL=new Set(['chrono','foudre','miroir','gravite','spectre','ruche']);
-const SET_DEF=()=>({abil:JSON.parse(JSON.stringify(ABIL_DEF)),dmgOut:1,dmgIn:1,speed:1,rushMax:1.5,rushRegen:1,music:'auto',musicVol:.6});
+const SET_DEF=()=>({abil:JSON.parse(JSON.stringify(ABIL_DEF)),dmgOut:1,dmgIn:1,speed:1,rushMax:1.5,rushRegen:1,music:'auto',musicVol:.6,ostVol:1});
 const SKEY='standErrant.settings.v1';
 function loadSet(){const d=SET_DEF();try{const raw=localStorage.getItem(SKEY);if(raw){const o=JSON.parse(raw);
-  for(const k of ['dmgOut','dmgIn','speed','rushMax','rushRegen','musicVol'])if(typeof o[k]==='number')d[k]=o[k];if(typeof o.music==='string')d.music=o.music;
+  for(const k of ['dmgOut','dmgIn','speed','rushMax','rushRegen','musicVol','ostVol'])if(typeof o[k]==='number')d[k]=o[k];if(typeof o.music==='string')d.music=o.music;
   if(o.abil)for(const id in d.abil){const a=o.abil[id];if(!a)continue;if(typeof a.cd==='number')d.abil[id].cd=a.cd;if(d.abil[id].dur!=null&&typeof a.dur==='number')d.abil[id].dur=a.dur}}}catch(e){}return d}
 function saveSet(){try{localStorage.setItem(SKEY,JSON.stringify(SET))}catch(e){}}
 let SET=loadSet();
@@ -570,8 +570,8 @@ function banner(kick,name,sub,c){
   bb.children[0].textContent=kick;bb.children[1].textContent=name;bb.children[2].textContent=sub;
   el.appendChild(bb);clearTimeout(bannerTimer);bannerTimer=setTimeout(()=>{el.innerHTML=''},3000);
 }
-function startTimeStop(by,x,y,dur){
-  sfxTimeStop();S.ts={active:dur,by};const v=S.vis;v.t=0;v.end=-1;v.cx=x;v.cy=y;
+function startTimeStop(by,x,y,dur,silent){
+  if(!silent)sfxTimeStop();S.ts={active:dur,by};const v=S.vis;v.t=0;v.end=-1;v.cx=x;v.cy=y;
 }
 function updateVis(dt){
   const v=S.vis;const Rmax=Math.hypot(VW,VH)/zoom*.6+80;
@@ -694,6 +694,30 @@ async function renderTheme(sr){
   }
   return oc.startRendering()}
 
+/* ---------- OST des pouvoirs : ost/<dossier>/ (un dossier par pouvoir) + ost/rafale/ pour la rafale ----------
+   ost/manifest.json est généré au déploiement. Sans fichier dans un dossier, le bruitage synthétisé par défaut est joué. */
+const OST_DIR={chrono:'chrono-noir',foudre:'foudre-vagabonde',jardin:'jardin-fractal',echo:'echo-cobalt',sirocco:'lame-sirocco',
+  miroir:'miroir-opale',gravite:'gravite-zero',spectre:'spectre-lunaire',ruche:'ruche-ambre',ancre:'ancre-nomade'};
+const ENEMY_DUR={chrono:2.4,foudre:1.3,miroir:3,spectre:3,ruche:6,gravite:1.6};
+let ostList={};const ostBufs={},ostLive=new Set();
+async function loadOstManifest(){try{const r=await fetch('ost/manifest.json',{cache:'no-cache'});if(r.ok){const j=await r.json();if(j&&typeof j==='object'&&!Array.isArray(j))ostList=j}}catch(e){}}
+function ostFiles(folder){const a=ostList[folder];return Array.isArray(a)?a.filter(x=>typeof x==='string'):[]}
+const hasOst=folder=>ostFiles(folder).length>0;
+function ostBuffer(path){if(!ostBufs[path])ostBufs[path]=fetch('ost/'+path.split('/').map(encodeURIComponent).join('/'))
+  .then(r=>{if(!r.ok)throw new Error('absent');return r.arrayBuffer()}).then(b=>AC.decodeAudioData(b)).catch(()=>null);return ostBufs[path]}
+function preloadOst(){if(!AC)return;for(const k in ostList)for(const f of ostFiles(k))ostBuffer(k+'/'+f)}
+/* Joue un fichier (au hasard s'il y en a plusieurs) du dossier. Renvoie une poignée {stop} ou null si le dossier est vide. */
+function playOst(folder,vol=1,loop=false){
+  if(!AC||!master||!hasOst(folder))return null;const files=ostFiles(folder);const file=files[Math.random()*files.length|0];
+  const h={src:null,g:null,stopped:false,stop(fade=.15){if(this.stopped)return;this.stopped=true;ostLive.delete(this);
+    if(this.src){const t=AC.currentTime;this.g.gain.setTargetAtTime(0,t,fade/3);try{this.src.stop(t+fade)}catch(e){}}}};
+  ostLive.add(h);
+  ostBuffer(folder+'/'+file).then(buf=>{if(!buf||h.stopped){ostLive.delete(h);return}
+    const g=AC.createGain();g.gain.value=vol*SET.ostVol;const src=AC.createBufferSource();src.buffer=buf;src.loop=loop;src.connect(g).connect(master);
+    src.onended=()=>ostLive.delete(h);src.start();h.src=src;h.g=g});
+  return h}
+function stopAllOst(){for(const h of [...ostLive])h.stop(.05)}
+
 /* ---------- combat ---------- */
 function hitNPC(e,dmg,kx,ky,stun,c){
   if(e.state==='down'||e.elec>0)return;if(e.shield>0&&e.state==='aggro'){if(S.time-(e.blockT||0)>.25){e.blockT=S.time;sfxPing(1900,.3);ftext(e.x,e.y-70,'BLOQUÉ',[.92,.56,.92],16,{life:.45,max:.45})}return}const p=S.player;const st=STANDS[p.si];dmg*=SET.dmgOut;
@@ -732,7 +756,7 @@ function defeatNPC(e){
   else setTimeout(()=>S.player&&banner('Victoire',e.name+' est vaincu·e',`${S.defeated} / ${S.total} utilisateurs de Stand`,st.c),300);
 }
 function playerDown(){
-  const p=S.player;if(p.active)endAbility(p);p.abilCd=0;p.dead=2.6;p.hp=0;p.rushing=false;S.ts.active=0;S.vis.t=-1;S.vis.end=-1;S.vis.amount=0;S.vis.r=0;
+  const p=S.player;if(p.active)endAbility(p);if(p.rushH){p.rushH.stop();p.rushH=null}p.abilCd=0;p.dead=2.6;p.hp=0;p.rushing=false;S.ts.active=0;S.vis.t=-1;S.vis.end=-1;S.vis.amount=0;S.vis.r=0;
   burst(p.x,p.y-24,24,STANDS[p.si].c,320,7,.8);
   banner('Hors de combat','Tu perds connaissance…','Tu te réveilles sur la place du Mirage.',[.89,.27,.49]);
 }
@@ -745,11 +769,13 @@ function updateCount(){$('#cnt').textContent=S.defeated;$('#tot').textContent=S.
 
 /* ---------- abilities ---------- */
 function useAbility(p){
-  const st=STANDS[p.si];const ox=p.x,oy=p.y-24;const dur=durOf(st);sfxAbility(st.id);
+  const st=STANDS[p.si];const ox=p.x,oy=p.y-24;const dur=durOf(st);
+  if(st.id==='ancre'&&!S.markers.length){ftext(p.x,p.y-80,'Aucun marqueur posé',st.c,16,{life:.9,max:.9,font:'"Zen Kaku Gothic New", sans-serif'});return}
+  if(p.ostH)p.ostH.stop(.1);const ostH=playOst(OST_DIR[st.id]);p.ostH=ostH;if(!ostH)sfxAbility(st.id);
   if(CANCEL.has(st.id))p.active={id:st.id,t:dur,max:dur};
   switch(st.id){
     case 'chrono':
-      startTimeStop('player',ox,oy,dur+5);ftext(p.x,p.y-96,'CHRONO NOIR !',st.c,30,{skew:true,life:1.2,max:1.2,vy:-20});
+      startTimeStop('player',ox,oy,dur+5,!!ostH);ftext(p.x,p.y-96,'CHRONO NOIR !',st.c,30,{skew:true,life:1.2,max:1.2,vy:-20});
       say(p,"Le temps s'arrête.",1.8);break;
     case 'foudre':
       p.elec=dur;p.rushing=false;burst(ox,oy,26,st.c,340,6,.5);burst(ox,oy,8,st.k,260,6,.4,4);
@@ -787,10 +813,10 @@ function placeMarker(p){if(p.markCd>0)return;p.markCd=.3;const st=STANDS[p.si];
   S.markers.push({x:p.x,y:p.y});if(p.tpIdx>=S.markers.length)p.tpIdx=0;
   sfxPing(1200,.3);burst(p.x,p.y-10,12,st.c,160,5,.4,3);ftext(p.x,p.y-80,'Marqueur '+S.markers.length,st.c,18,{life:.7,max:.7})}
 function endAbility(p){
-  const a=p.active;if(!a)return;p.active=null;const st=STANDS[p.si];
+  const a=p.active;if(!a)return;p.active=null;const st=STANDS[p.si];const hadOst=!!p.ostH;if(p.ostH){p.ostH.stop(.25);p.ostH=null}
   switch(a.id){
     case 'chrono':if(S.ts.by==='player')S.ts.active=Math.min(S.ts.active,.0001);break;
-    case 'foudre':p.elec=0;p.inv=Math.max(p.inv,.25);burst(p.x,p.y-24,22,st.c,300,6,.5);sfxZap(1);break;
+    case 'foudre':p.elec=0;p.inv=Math.max(p.inv,.25);burst(p.x,p.y-24,22,st.c,300,6,.5);if(!hadOst)sfxZap(1);break;
     case 'miroir':p.shield=0;break;
     case 'gravite':if(a.v)a.v.t=Math.min(a.v.t,0);break;
     case 'spectre':p.invis=0;burst(p.x,p.y-24,12,st.c,180,5,.5);break;
@@ -816,7 +842,7 @@ function updatePlayer(dt){
   if(p.dead>0){p.dead-=dt;if(p.dead<=0)respawn();return}
   p.sayT-=dt;p.hitFlash-=dt;
   if(!p.active)p.abilCd=Math.max(0,p.abilCd-dt);
-  if(playerFrozen()){p.rushing=false;abPressed=false;return}
+  if(playerFrozen()){p.rushing=false;abPressed=false;if(p.rushH){p.rushH.stop();p.rushH=null}return}
   if(p.active){p.active.t-=dt;if(p.active.t<=0)endAbility(p)}p.inv-=dt;p.markCd-=dt;p.rootT-=dt;unstick(p);
   moveEnt(p,p.kx*dt,p.ky*dt);const kd=Math.pow(.004,dt);p.kx*=kd;p.ky*=kd;
   if(p.dash){p.dash.t-=dt;const sp=1150*dt;
@@ -831,6 +857,8 @@ function updatePlayer(dt){
   const il=Math.hypot(ix,iy);p.moving=false;
   const wantRush=keys.has('KeyJ')||keys.has('Space')||touchRush;
   p.rushing=wantRush&&(p.rushing?p.energy>0:p.energy>.35)&&!p.dash&&!(p.elec>0);
+  if(p.rushing&&!p.rushH)p.rushH=playOst('rafale',1,true);
+  if(!p.rushing&&p.rushH){p.rushH.stop();p.rushH=null}
   if(il>.15){const nx=ix/Math.max(1,il),ny=iy/Math.max(1,il);
     const sp=(150+lv(st,'V')*14)*SET.speed*(p.elec>0?3.4:p.rootT>0?0:p.rushing?.45:1);moveEnt(p,nx*sp*dt,ny*sp*dt);
     if(!p.rushing){p.fx=ix/il;p.fy=iy/il}p.anim+=dt*12;p.moving=true}
@@ -840,7 +868,7 @@ function updatePlayer(dt){
     if(best){const d=bd||1;p.fx=(best.x-p.x)/d;p.fy=(best.y-p.y)/d}
     else if(il>.15){p.fx=ix/il;p.fy=iy/il}
     p.energy-=dt;p.rushTick-=dt;p.cryT-=dt;
-    if(p.rushTick<=0){p.rushTick=.12-lv(st,'V')*.012;sfxSwing(1+p.si*.03,.55);
+    if(p.rushTick<=0){p.rushTick=.12-lv(st,'V')*.012;if(!p.rushH)sfxSwing(1+p.si*.03,.55);
       for(const e of S.npcs){if(e.state==='down')continue;const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy)||1;
         if(d<reach+18&&(dx*p.fx+dy*p.fy)/d>.3)hitNPC(e,1+lv(st,'P')*.75,p.fx*90,p.fy*90,.14,st.c)}}
     if(p.cryT<=0){p.cryT=.2;ftext(p.sx+(Math.random()-.5)*70,p.sy-70-Math.random()*40,st.cry+' !',st.c,24+Math.random()*16,{skew:true,rot:(Math.random()-.5)*.3,life:.55,max:.55,vy:-80})}
@@ -848,7 +876,7 @@ function updatePlayer(dt){
   if(p.elec>0){
     for(const e of S.npcs){if(e.state==='down')continue;e.zapT-=dt;
       if(e.zapT<=0&&Math.hypot(e.x-p.x,e.y-p.y)<42){e.zapT=.35;hitNPC(e,10+lv(st,'P')*2,p.fx*170,p.fy*170,.45,st.k);burst(e.x,e.y-26,6,st.k,260,5,.3,4)}}
-    if(Math.random()<dt*14)sfxZap(.35);
+    if(!p.ostH&&Math.random()<dt*14)sfxZap(.35);
     S.parts.push({x:p.x+(Math.random()-.5)*12,y:p.y-24+(Math.random()-.5)*12,vx:0,vy:0,life:.32,max:.32,r:9,c:Math.random()<.3?st.k:st.c,shape:0,grav:0,rot:0});
   }
   if(abPressed){if(st.id==='ancre')placeMarker(p);else if(p.active)endAbility(p);else if(p.abilCd<=0&&!p.dash)useAbility(p)}abPressed=false;
@@ -919,8 +947,8 @@ function npcPower(e,st,d,dt){
   const p=S.player;e.abilCd-=dt;if(e.abilCd>0||!p||p.dead>0)return;
   const near=clamp(1-d/700,0,1);let used=true;
   switch(st.id){
-    case 'chrono':if(d<420&&S.ts.active<=0){startTimeStop(e,e.x,e.y-24,2.4);say(e,"Ton temps vient de s’arrêter.",2.2);e.rushCd=0}else used=false;break;
-    case 'foudre':if(d<480&&d>70){e.elec=1.3;sfxZap(.9*near)}else used=false;break;
+    case 'chrono':if(d<420&&S.ts.active<=0){startTimeStop(e,e.x,e.y-24,2.4,hasOst(OST_DIR.chrono));say(e,"Ton temps vient de s’arrêter.",2.2);e.rushCd=0}else used=false;break;
+    case 'foudre':if(d<480&&d>70){e.elec=1.3;if(!hasOst(OST_DIR.foudre))sfxZap(.9*near)}else used=false;break;
     case 'jardin':if(d<300){p.rootT=1.6;e.hp=Math.min(e.max,e.hp+25);ftext(e.x,e.y-80,'+25',[.5,1,.6],20);say(e,"Mes racines te tiennent !",1.6);
       for(let i=0;i<18;i++){const a=i/18*6.283;S.parts.push({x:p.x+Math.cos(a)*30,y:p.y+Math.sin(a)*12,vx:0,vy:-15,life:1,max:1,r:6,c:i%2?st.c:st.k,shape:3,grav:0,rot:a})}}else used=false;break;
     case 'echo':if(d<560){for(let i=-1;i<=1;i++){const a=Math.atan2(p.y-e.y,p.x-e.x)+i*.7;S.proj.push({x:e.x,y:e.y-26,vx:Math.cos(a)*300,vy:Math.sin(a)*300,r:10,dmg:9,owner:'enemy',c:st.c,life:2.4,homing:true,kind:'orb'})}}else used=false;break;
@@ -935,11 +963,13 @@ function npcPower(e,st,d,dt){
   }
   if(!used){e.abilCd=.4;return}
   e.abilCd=st.id==='chrono'?12:st.id==='foudre'?7+Math.random()*3:ABIL_DEF[st.id].cd*1.3+1+Math.random()*2;
-  if(near>.25&&st.id!=='chrono'&&st.id!=='foudre')sfxAbility(st.id);
+  const h=near>.05?playOst(OST_DIR[st.id],near):null;
+  if(h){if(ENEMY_DUR[st.id])setTimeout(()=>h.stop(.25),ENEMY_DUR[st.id]*1000)}
+  else if(near>.25&&st.id!=='chrono'&&st.id!=='foudre')sfxAbility(st.id);
 }
 function updateWorld(dt){
   if(S.ts.active>0){S.ts.active-=dt;
-    if(S.ts.active<=0){S.ts.active=0;S.vis.end=0;S.ts.by=null;sfxResume();
+    if(S.ts.active<=0){S.ts.active=0;S.vis.end=0;S.ts.by=null;if(!hasOst(OST_DIR.chrono))sfxResume();
       if(S.player)ftext(S.player.x,S.player.y-96,'Le temps reprend son cours',[1,.95,.8],18,{life:1.2,max:1.2,vy:-20,font:'"Zen Kaku Gothic New", sans-serif'})}}
   updateVis(dt);
   const freezeAll=enemyFrozen();
@@ -1221,7 +1251,7 @@ function buildMenu(){const box=$('#cards');const names={P:'PUI',V:'VIT',Po:'POR'
     box.appendChild(b)})}
 function startGame(si){
   if(si<0)return;const st=STANDS[si];
-  initAudio();startMusicSoon=true;S.paused=false;lastAbTxt='';S.mode='play';S.player=makePlayer(si);S.ts={active:0,by:null};
+  initAudio();preloadOst();S.paused=false;lastAbTxt='';S.mode='play';S.player=makePlayer(si);S.ts={active:0,by:null};
   const others=USERS.filter(u=>u.s!==st.id);S.npcs=others.map((u,i)=>makeNPC(u,i));
   S.total=S.npcs.length;S.defeated=0;S.won=false;S.proj.length=0;S.parts.length=0;S.texts.length=0;S.vortex.length=0;S.bolts.length=0;S.markers.length=0;
   S.cam.x=S.player.x;S.cam.y=S.player.y-30;startMusic();
@@ -1257,7 +1287,7 @@ function setPause(v){if(S.mode!=='play')return;S.paused=v;$('#pause').hidden=!v;
   if(v){keys.clear();touchRush=false;joy.x=joy.y=0;$('#knob').style.transform='';if(AC&&AC.state==='running')AC.suspend();$('#resumeBtn').focus()}
   else{$('#settings').hidden=true;if(AC&&AC.state==='suspended')AC.resume()}}
 function toMenu(){
-  stopMusic();S.paused=false;$('#pause').hidden=true;$('#settings').hidden=true;S.mode='menu';S.player=null;
+  stopMusic();stopAllOst();S.paused=false;$('#pause').hidden=true;$('#settings').hidden=true;S.mode='menu';S.player=null;
   S.npcs=USERS.map((u,i)=>makeNPC(u,i));S.proj.length=0;S.parts.length=0;S.texts.length=0;S.vortex.length=0;S.bolts.length=0;S.markers.length=0;
   S.ts={active:0,by:null};Object.assign(S.vis,{amount:0,r:0,t:-1,end:-1,flash:0});S.shake=0;
   $('#hud').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;$('#banner').innerHTML='';keys.clear();touchRush=false;
@@ -1279,6 +1309,7 @@ function renderSettings(){
   <section class="set-sec"><h3>Musique</h3>
     <label class="fld" for="musSel2"><span>Morceau joué pendant la partie (en boucle)</span><select id="musSel2"></select></label>
     ${slider('s-mvol','Volume de la musique',SET.musicVol,0,1,.05,'%')}
+    ${slider('s-ovol','Volume des OST de pouvoir et de rafale',SET.ostVol,0,1.5,.05,'%')}
     <div class="m-actions"><label class="btn ghost" for="musFile">Ajouter un fichier audio…</label><button class="btn ghost" id="musDel">Retirer ce morceau</button><span class="mus-status" id="musStatus2" role="status"></span></div>
     <p class="note">Les morceaux ajoutés restent enregistrés dans ce navigateur, sur cet appareil.</p>
   </section>
@@ -1298,6 +1329,7 @@ function renderSettings(){
   bind('s-cd','s',v=>{a.cd=v;const p=S.player;if(p&&p.si===setStand)p.abilCd=Math.min(p.abilCd,v)});
   bind('s-out','×',v=>{SET.dmgOut=v});bind('s-in','×',v=>{SET.dmgIn=v});bind('s-spd','×',v=>{SET.speed=v});
   bind('s-rmax','s',v=>{SET.rushMax=v;if(S.player)S.player.energy=Math.min(S.player.energy,v)});bind('s-rreg','×',v=>{SET.rushRegen=v});
+  bind('s-ovol','%',v=>{SET.ostVol=v});
   bind('s-mvol','%',v=>{SET.musicVol=v;if(musicGain&&!muted)musicGain.gain.setTargetAtTime(v,AC.currentTime,.03)});
 }
 function openSettings(){setStand=S.player?S.player.si:(chosen>=0?chosen:0);renderSettings();$('#settings').hidden=false;$('#s-stand').focus()}
@@ -1313,7 +1345,7 @@ $('#setReset').addEventListener('click',()=>{const keepMusic=SET.music;SET=SET_D
 /* ================= BOOT ================= */
 $('#musSel').addEventListener('change',e=>chooseMusic(e.target.value));
 $('#musFile').addEventListener('change',e=>{addMusicFile(e.target.files&&e.target.files[0]);e.target.value=''});
-renderMusicSelects();loadTracks();loadFolderTracks();
+renderMusicSelects();loadTracks();loadFolderTracks();loadOstManifest();
 $('#mute').addEventListener('click',()=>{initAudio();toggleMute()});
 addEventListener('pointerdown',()=>{if(S.mode==='play')initAudio()});
 buildMenu();

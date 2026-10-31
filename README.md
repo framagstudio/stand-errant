@@ -21,6 +21,10 @@ Le menu « Musique » liste les fichiers du dossier [`music/`](music/) (nom du f
 
 On peut aussi ajouter un fichier audio depuis l'écran de choix du Stand : il reste alors enregistré dans le navigateur, sans être mis en ligne.
 
+## OST des pouvoirs
+
+Le dossier [`ost/`](ost/) contient un sous-dossier par pouvoir et un dossier `rafale/` commun. Les fichiers audio qui y sont déposés remplacent les bruitages synthétisés ; un dossier vide garde le son par défaut. Détails dans [`ost/README.md`](ost/README.md).
+
 ## Technique
 
 Un seul fichier `index.html`, sans dépendance ni étape de build : WebGPU pour le rendu (shaders WGSL), Web Audio pour les sons et la musique.

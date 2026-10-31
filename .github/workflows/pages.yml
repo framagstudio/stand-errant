@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Lister les musiques du dossier music/
+      - name: Lister les musiques (music/) et les OST de pouvoir (ost/)
         run: |
           python3 - <<'PY'
           import json, os
@@ -32,6 +32,15 @@ jobs:
           with open('music/tracks.json', 'w', encoding='utf-8') as fh:
               json.dump(files, fh, ensure_ascii=False)
           print('Morceaux :', files)
+          ost = {}
+          if os.path.isdir('ost'):
+              for d in sorted(os.listdir('ost')):
+                  full = os.path.join('ost', d)
+                  if os.path.isdir(full):
+                      ost[d] = sorted((f for f in os.listdir(full) if f.lower().endswith(exts)), key=str.lower)
+          with open('ost/manifest.json', 'w', encoding='utf-8') as fh:
+              json.dump(ost, fh, ensure_ascii=False)
+          print('OST :', ost)
           PY
 
       - uses: actions/configure-pages@v5
