@@ -4,6 +4,15 @@ Jeu 2D jouable dans le navigateur, rendu avec WebGPU. Choisis un Stand parmi dix
 
 **Jouer :** https://framagstudio.github.io/stand-errant/ — dans un navigateur compatible WebGPU (Chrome ou Edge récents, ou Safari / Firefox récents avec WebGPU activé).
 
+## Cartes
+
+| Carte | Ce qu'on peut y faire |
+| --- | --- |
+| Saint-Mirage | Ville et canal. La fontaine soigne, les tonneaux rouges explosent, les caisses lâchent des soins. |
+| Archipel de Brumevent | Dix îles reliées par des ponts. Les geysers te projettent d'une île à l'autre. |
+| Temple du Sablier | Pièges à piques qui blessent aussi les ennemis, sables mouvants, oasis qui soignent. Frapper le Grand Sablier ralentit les ennemis. |
+| Fonderie Néon | Lave, tapis roulants, sols électriques par cycles, disjoncteurs qui coupent le courant, portails entre les coins de l'usine. |
+
 ## Commandes
 
 | Action | Clavier | Mobile |
