@@ -214,7 +214,7 @@ label.btn{display:inline-block}
     <header class="m-head">
       <p class="kicker">Saint-Mirage · Chapitre 1</p>
       <h1>Stand<br><span>Errant</span></h1>
-      <p class="lede" id="lede">Un pouvoir s'est éveillé en toi et a pris forme à tes côtés. Choisis ce Stand et le lieu où tu l'éveilles : dix autres utilisateurs de Stand t'y attendent, et aucun ne te laissera passer sans se battre.</p>
+      <p class="lede" id="lede">Un pouvoir s'est éveillé en toi et a pris forme à tes côtés. Choisis ce Stand et le lieu où tu l'éveilles : d'autres utilisateurs de Stand et leurs sbires t'y attendent, et aucun ne te laissera passer sans se battre.</p>
     </header>
     <div class="sec"><h2 class="sec-t">Choisis ton Stand</h2></div>
     <div class="cards" id="cards"></div>
@@ -277,6 +277,9 @@ const STANDS=[
  {id:'plastic',name:'Plastic Beach',c:[.88,.96,1],k:[.3,.74,1],cry:'PACHI',crest:'beads',ab:'Polystyrène statique',desc:"Libère des billes de polystyrène qui se collent aux ennemis et les ralentissent. L inverse la polarité : elles implosent et tirent leurs porteurs vers un point magnétique.",st:{P:'C',V:'B',Po:'A',En:'B',Pr:'B',Pt:'A'},cd:10},
 ];
 const SI=id=>STANDS.findIndex(s=>s.id===id);
+/* Stands jouables pour l'instant. Les autres restent définis dans le code mais n'apparaissent plus en jeu. */
+const ENABLED=new Set(['chrono']);
+const ENEMY_POOL=()=>USERS.filter(u=>ENABLED.has(u.s));
 const ABIL_DEF={chrono:{cd:16,dur:5},foudre:{cd:8,dur:3},jardin:{cd:12,dur:3.2},echo:{cd:5,dur:null},sirocco:{cd:6,dur:null},
   miroir:{cd:9,dur:3.6},gravite:{cd:10,dur:1.6},spectre:{cd:12,dur:4.5},ruche:{cd:14,dur:9},ancre:{cd:4,dur:null},pantin:{cd:16,dur:6},
   takeonme:{cd:10,dur:4},pinball:{cd:3,dur:20},paintblack:{cd:12,dur:5},dontstop:{cd:6,dur:8},cutting:{cd:7,dur:null},plastic:{cd:10,dur:15}};
@@ -404,7 +407,7 @@ const MAPS=[
  {id:'mirage',name:'Saint-Mirage',kicker:'Ville portuaire',ground:0,seed:20261031,col:[.95,.76,.3],spawn:{x:1800,y:1985},
   desc:"Rues pavées, canal et ponts. La fontaine de la place soigne, et les tonneaux rouges explosent quand on les frappe.",
   feats:['Fontaine qui soigne','Tonneaux explosifs','Caisses à briser'],
-  intro:"Dix autres utilisateurs de Stand rôdent en ville, et des sbires armés traînent dans les rues…",
+  intro:"Un autre utilisateur de Stand rôde en ville, et des sbires armés traînent dans les rues…",
   blocked:(x,y,r)=>y>2652-r*.4&&y<2758+r*.4&&roadD(x)>58-r,
   mini(x,y){if(y>2652&&y<2758&&roadD(x)>58)return [47,109,152];if(Math.hypot(x-1800,y-1800)<300)return [184,164,142];
     if(roadD(x)<64||roadD(y)<64)return [95,90,102];return [47,85,54]},
@@ -1503,7 +1506,7 @@ function makeGrunt(i,kind){const p=GRUNT_SPOTS[i]||{x:spawn.x+300+i*40,y:spawn.y
     hp:sword?85:65,max:sword?85:65,state:'idle',met:true,kx:0,ky:0,stun:0,rootT:0,hitFlash:0,sayT:0,say:'',acc:0,lastNum:0,downT:0,talkCd:0,moving:false,
     cd:1,atk:0,aim:0,slashT:0,flashT:0,aimX:0,aimY:0,standA:0,elec:0,zap:0,zapT:0,shield:0,invis:0,drones:0,droneTick:0,sx:p.x,sy:p.y,rushT:0,
     u:{shirt:look.shirt,hair:look.hair,line:sword?'En garde !':'Pas un geste !',lose:sword?'Ma lame… brisée.':'Plus de munitions… Je me rends.'}}}
-function spawnNPCs(excl){let users=USERS.filter(u=>u.s!==excl);
+function spawnNPCs(excl){const pool=ENEMY_POOL();let users=pool.filter(u=>u.s!==excl);if(!users.length)users=pool.slice();
   if(excl){for(let i=users.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[users[i],users[j]]=[users[j],users[i]]}users=users.slice(0,clamp(SET.nStand|0,0,users.length))}
   const list=users.map((u,i)=>makeNPC(u,i));let g=0;
   const nS=excl?SET.nSword|0:4,nG=excl?SET.nGun|0:4;
@@ -1957,7 +1960,7 @@ function radar(st){const keys=['P','V','Po','En','Pr','Pt'];const col=rgb(st.c);
   const lab=keys.map((k,i)=>{const [x,y]=pt(i,51);return `<text class="rl" x="${x}" y="${y}">${st.st[k]}</text>`}).join('');
   return `<svg viewBox="-62 -62 124 124" aria-hidden="true">${g}<polygon points="${poly}" fill="${col}" fill-opacity=".45" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>${lab}</svg>`}
 function buildMenu(){const box=$('#cards');const names={P:'PUI',V:'VIT',Po:'POR',En:'END',Pr:'PRÉ',Pt:'POT'};
-  STANDS.forEach((st,i)=>{const b=document.createElement('button');b.className='card';b.id='card-'+st.id;b.setAttribute('aria-pressed','false');
+  STANDS.forEach((st,i)=>{if(!ENABLED.has(st.id))return;const b=document.createElement('button');b.className='card';b.id='card-'+st.id;b.setAttribute('aria-pressed','false');
     b.style.setProperty('--sc',rgb(st.c));
     b.innerHTML=`${st.id==='chrono'?'<span class="c-tag">Arrêt du temps</span>':''}${radar(st)}<span class="c-name"></span><span class="c-ab"></span><p class="c-desc"></p>
       <div class="c-stats">${Object.keys(names).map(k=>`<div><span>${names[k]}</span><b>${st.st[k]}</b></div>`).join('')}</div>`;
@@ -2036,7 +2039,7 @@ function renderSettings(){
     :slider('s-dur',DUR_LABEL[st.id]||'Durée du pouvoir',a.dur,.5,20,.5,'s');
   $('#setBody').innerHTML=`
   <section class="set-sec"><h3>Pouvoir</h3>
-    <label class="fld" for="s-stand"><span>Stand</span><select id="s-stand">${STANDS.map((s,i)=>`<option value="${i}"${i===setStand?' selected':''}>${s.name} · ${s.ab}</option>`).join('')}</select></label>
+    <label class="fld" for="s-stand"><span>Stand</span><select id="s-stand">${STANDS.map((s,i)=>ENABLED.has(s.id)?`<option value="${i}"${i===setStand?' selected':''}>${s.name} · ${s.ab}</option>`:'').join('')}</select></label>
     ${durHtml}${slider('s-cd','Recharge',a.cd,0,40,.5,'s')}
     <p class="note">${NOTES[st.id]?NOTES[st.id]:st.id==='ancre'?"K pose un marqueur (3 au maximum, le plus ancien est remplacé). L te téléporte au marqueur suivant. La recharge s'applique à la téléportation.":CANCEL.has(st.id)?"Ce pouvoir peut être arrêté avant la fin : appuie de nouveau sur K (ou sur le bouton Pouvoir). La recharge complète démarre dès qu'il s'arrête, que tu l'aies coupé ou qu'il soit arrivé au bout.":"La recharge démarre dès que le pouvoir est lancé."}</p>
   </section>
@@ -2048,10 +2051,10 @@ function renderSettings(){
     <p class="note">Les morceaux ajoutés restent enregistrés dans ce navigateur, sur cet appareil.</p>
   </section>
   <section class="set-sec"><h3>Ennemis</h3>
-    ${slider('s-nst','Utilisateurs de Stand',SET.nStand,0,USERS.length-1,1,'n')}
+    ${slider('s-nst','Utilisateurs de Stand',Math.min(SET.nStand,ENEMY_POOL().length),0,ENEMY_POOL().length,1,'n')}
     ${slider('s-nsw','Spadassins (épée)',SET.nSword,0,15,1,'n')}
     ${slider('s-ngu','Tireurs (pistolet)',SET.nGun,0,15,1,'n')}
-    <p class="note">Les utilisateurs de Stand sont tirés au hasard parmi les ${USERS.length-1} adversaires possibles. S'applique à la prochaine partie.</p>
+    <p class="note">Les utilisateurs de Stand sont tirés au hasard parmi les ${ENEMY_POOL().length} adversaires possibles pour l'instant. S'applique à la prochaine partie.</p>
     ${S.mode==='play'?'<div class="m-actions"><button class="btn" id="setRestart">Relancer la partie avec ces réglages</button></div>':''}
   </section>
   <section class="set-sec"><h3>Combat</h3>
@@ -2092,6 +2095,7 @@ renderMusicSelects();loadTracks();loadFolderTracks();loadOstManifest();
 $('#mute').addEventListener('click',()=>{initAudio();toggleMute()});
 addEventListener('pointerdown',()=>{if(S.mode==='play')initAudio()});
 buildMenu();buildMaps();
+{const only=[...document.querySelectorAll('.card')];if(only.length===1)only[0].click()}
 S.npcs=spawnNPCs(null);
 addEventListener('resize',resize);resize();
 initGPU().then(()=>requestAnimationFrame(t=>{last=t;frame(t)})).catch(err=>{console.error(err);$('#nogpu').hidden=false;$('#menu').hidden=true});
