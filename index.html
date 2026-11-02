@@ -1565,7 +1565,13 @@ function updatePlayer(dt){
   p.sayT-=dt;p.hitFlash-=dt;p.rodT-=dt;if(p.rodT<=0)p.rod=null;p.wcd-=dt;p.slashT-=dt;p.parry-=dt;p.giant-=dt;p.rushBoost-=dt;p.extraArm-=dt;p.extraLeg-=dt;p.diceShow-=dt;
   if(p.dice){p.dice.t-=dt;if(p.dice.t<=0){applyDice(p,p.dice.face,st);p.diceFace=p.dice.face;p.diceShow=1.4;p.dice=null}}
   if(!p.active)p.abilCd=Math.max(0,p.abilCd-dt);
-  if(playerFrozen()){p.rushing=false;abPressed=false;if(p.rushH){p.rushH.stop();p.rushH=null}return}
+  if(playerFrozen()){p.rushing=false;if(p.rushH){p.rushH.stop();p.rushH=null}
+    const ts=S.ts.by;if(abPressed&&st.id==='horloge'&&p.abilCd<=0&&ts&&S.npcs.includes(ts)&&ts.state!=='down'){
+      if(!ts.th||!ts.th.length)ts.th=[{x:ts.x,y:ts.y,hp:ts.hp,limbs:ts.limbs?{...ts.limbs}:null}];
+      if(p.ostH)p.ostH.stop(.1);const h=playOst(OST_DIR.horloge);p.ostH=h;if(!h)sfxAbility('horloge');
+      forceRewind(ts,Math.min(8,durOf(st)),st);p.abilCd=cdOf(st);
+      banner('Horloge Inverse','Le temps reprend',ts.name+' est renvoyé·e en arrière : son arrêt du temps est annulé.',st.c)}
+    abPressed=false;return}
   if(p.active){p.active.t-=dt;if(p.active.t<=0)endAbility(p)}p.inv-=dt;p.markCd-=dt;p.rootT-=dt;if(!p.air&&!p.wire)unstick(p);
   if(p.air){const a=p.air;a.t+=dt;const k=Math.min(1,a.t/a.dur);p.x=a.sx+(a.tx-a.sx)*k;p.y=a.sy+(a.ty-a.sy)*k;p.lift=Math.sin(Math.PI*k)*230;
     p.sx+=(p.x-16-p.sx)*.3;p.sy+=(p.y-20-p.sy)*.3;p.rushing=false;abPressed=false;tpPressed=false;
@@ -1718,6 +1724,7 @@ function updateNPC(e,dt){
 }
 /* Pouvoir propre à chaque ennemi. Pas de projectiles génériques : seulement leur Stand ou la rafale. */
 function npcPower(e,st,d,dt,T){
+  if(S.mode!=='play')return;
   const p=T;e.abilCd-=dt;if(e.abilCd>0||!p||p.dead>0)return;const dx=p.x-e.x,dy=p.y-e.y;const isP=T===S.player;
   const near=clamp(1-d/700,0,1);let used=true;
   switch(st.id){
@@ -1952,6 +1959,7 @@ function updateGrunt(e,dt){
   }
 }
 function updateWorld(dt){
+  if(S.ts.active>0&&S.ts.by&&S.ts.by!=='player'&&(!S.npcs.includes(S.ts.by)||S.ts.by.state==='down'))S.ts.active=Math.min(S.ts.active,.0001);
   if(S.ts.active>0){S.ts.active-=dt;
     if(S.ts.active<=0){S.ts.active=0;S.vis.end=0;S.ts.by=null;if(!hasOst(OST_DIR.chrono))sfxResume();
       if(S.player)ftext(S.player.x,S.player.y-96,'Le temps reprend son cours',[1,.95,.8],18,{life:1.2,max:1.2,vy:-20,font:'"Zen Kaku Gothic New", sans-serif'})}}
@@ -2446,7 +2454,7 @@ function updateHUD(){const p=S.player;if(!p)return;const st=STANDS[p.si];
   if(st.id==='foudre'&&!p.active&&!p.wire)txt='Forme électrique · '+(wireNearest(p.x,p.y,110)?'câble à portée':'rejoins un câble ou une prise');
   if(st.id==='ventriloque')txt='Leurres '+S.decoys.filter(d=>d.owner==='player').length+'/2 · frappe dans le dos';
   if(st.id==='mainbasse'&&(p.extraArm>0||p.extraLeg>0))txt=p.extraArm>0?'Troisième bras · '+Math.ceil(p.extraArm)+' s':'Jambe de rechange · '+Math.ceil(p.extraLeg)+' s';
-  if(st.id==='horloge')txt='Rembobinage forcé · K sur l\'ennemi le plus proche';
+  if(st.id==='horloge')txt=playerFrozen()&&S.ts.by&&S.ts.by.name&&p.abilCd<=0?'Figé ! K pour rembobiner '+S.ts.by.name:'Rembobinage forcé · K sur l\'ennemi le plus proche';
   if(st.id==='kleptomane')txt=p.weapon?(p.weapon.kind==='gun'?'Pistolet volé · '+p.weapon.n+' balles · J pour tirer':'Épée volée · '+p.weapon.n+' coups · J pour frapper'):'Vol à la tire · K près d\'un ennemi';
   if(st.id==='paratonnerre'&&p.rodT>0&&p.rod)txt='Paratonnerre sur '+p.rod.name+' · '+Math.ceil(p.rodT)+' s';
   if(st.id==='riposte')txt=p.parry>0?'En garde !':'Parade · K juste avant le coup';
@@ -2501,7 +2509,7 @@ function buildMenu(){const box=$('#cards');const names={P:'PUI',V:'VIT',Po:'POR'
 function startGame(si){
   if(si<0)return;const st=STANDS[si];
   loadMap(MAPI);miniStatic=null;S.pickups.length=0;
-  initAudio();preloadOst();S.paused=false;lastAbTxt='';S.mode='play';S.player=makePlayer(si);S.ts={active:0,by:null};
+  initAudio();preloadOst();S.paused=false;lastAbTxt='';S.mode='play';S.player=makePlayer(si);S.ts={active:0,by:null};Object.assign(S.vis,{amount:0,r:0,cx:0,cy:0,t:-1,end:-1,flash:0});S.slowmo=0;
   S.npcs=spawnNPCs(st.id);
   S.total=S.npcs.filter(e=>!e.grunt).length;S.defeated=0;S.won=false;S.proj.length=0;S.parts.length=0;S.texts.length=0;S.vortex.length=0;S.bolts.length=0;S.markers.length=0;S.bumpers.length=0;S.decoys.length=0;S.birds.length=0;S.rings.length=0;S.beads.length=0;S.ink.length=0;S.cuts.length=0;S.eshadows.length=0;S.pshadow=null;S.magnet=null;
   S.cam.x=S.player.x;S.cam.y=S.player.y-30;startMusic();
