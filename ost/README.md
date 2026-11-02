@@ -23,12 +23,13 @@ Les ennemis utilisent les mêmes fichiers quand ils déclenchent leur pouvoir, a
 | `dont-stop-me-now/` | Locomotive humaine (Don't Stop Me Now) | Joué au départ de la course, coupé à l'arrêt. |
 | `cutting-crew/` | Découpe d'écran (Cutting Crew) | Joué en entier quand tu traces la ligne de coupe. |
 | `plastic-beach/` | Polystyrène statique (Plastic Beach) | Joué en entier quand les billes sont libérées. |
-| `ventriloque/` | Voix fantôme (Ventriloque) | Joué en entier quand tu poses un leurre. |
 | `main-basse/` | Arrachage (Main Basse) | Joué en entier quand tu arraches un membre. |
 | `riposte/` | Parade (Riposte) | Joué en entier à l'ouverture de la parade. |
 | `fil-d-ariane/` | Rembobinage (Fil d'Ariane) | Joué quand le fil commence à se dérouler, coupé quand tu rembobines. |
 | `retour-de-baton/` | Rétrospective (Retour de Bâton) | Joué en entier au retour en arrière. |
 | `coup-de-des/` | Lancer de dé (Coup de Dés) | Joué en entier à chaque lancer. |
+| `kleptomane/` | Vol à la tire (Kleptomane) | Joué en entier quand tu voles une arme ou un Stand. |
+| `paratonnerre/` | Détournement (Paratonnerre) | Joué quand tu désignes l'ennemi qui servira de paratonnerre. |
 | `rafale/` | Rafale (Toutes les Stands) | Joué en boucle tant que tu maintiens la rafale, coupé dès que tu la relâches. Commun à tous les Stands. |
 
 Ce dossier est servi publiquement sur GitHub Pages : n'y mets que des sons que tu as le droit de diffuser.
