@@ -1578,7 +1578,7 @@ function updatePlayer(dt){
     if(Math.random()<.6)S.parts.push({x:p.x,y:p.y-p.lift,vx:0,vy:40,life:.5,max:.5,r:6,c:[.8,.93,1],shape:0,grav:0,rot:0});
     if(k>=1){p.air=null;p.lift=0;unstick(p);p.geyT=.9;burst(p.x,p.y,20,[.75,.9,1],240,6,.5);sfxHit(.7,.6)}
     if(p.rushH){p.rushH.stop();p.rushH=null}return}
-  if(p.frew){const R=p.frew;R.t+=dt;R.tick-=dt;if(R.tick<=0&&R.t<R.dur){R.tick=.15-.08*R.t/R.dur;sfxTick(R.n++%2)}const k=Math.min(1,R.t/R.dur),q=R.pts[Math.min(R.pts.length-1,Math.floor(k*(R.pts.length-1)))];p.x=q.x;p.y=q.y;p.sx=p.x-16;p.sy=p.y-30;p.rushing=false;abPressed=false;tpPressed=false;if(p.rushH){p.rushH.stop();p.rushH=null}
+  if(p.frew){const R=p.frew;R.t+=dt;const k=Math.min(1,R.t/R.dur),q=R.pts[Math.min(R.pts.length-1,Math.floor(k*(R.pts.length-1)))];p.x=q.x;p.y=q.y;p.sx=p.x-16;p.sy=p.y-30;p.rushing=false;abPressed=false;tpPressed=false;if(p.rushH){p.rushH.stop();p.rushH=null}
     if(k>=1){p.frew=null;p.x=R.old.x;p.y=R.old.y;unstick(p);p.hp=Math.min(p.hp,R.old.hp);for(const l in p.limbs)p.limbs[l]=p.limbs[l]&&R.old.limbs[l]?1:0;p.th=[];p.kx=p.ky=0}return}
   if(p.rew){const R=p.rew;R.t+=dt;const k=Math.min(1,R.t/R.dur),q=R.pts[Math.min(R.pts.length-1,Math.floor(k*(R.pts.length-1)))];p.x=q.x;p.y=q.y;p.sx=p.x-16;p.sy=p.y-30;
     if(Math.random()<.8)S.parts.push({x:p.x,y:p.y-24,vx:0,vy:0,life:.4,max:.4,r:12,c:st.c,shape:0,grav:0,rot:0});p.rushing=false;abPressed=false;tpPressed=false;if(p.rushH){p.rushH.stop();p.rushH=null}
@@ -1750,7 +1750,7 @@ function npcPower(e,st,d,dt,T){
     case 'ventriloque':if(d<500&&!(e.invis>0)){e.invis=2.8;S.decoys.push({isDecoy:true,owner:e,x:e.x,y:e.y,fx:e.fx,fy:e.fy,hp:1,t:4,u:e.u,si:e.si,name:e.name,anim:0});burst(e.x,e.y-24,12,st.c,200,5,.4)}else used=false;break;
     case 'mainbasse':if(d<110&&!T.isDecoy){if(isP){if(hurtPlayer(8*npcDmgMul(e),e.x,e.y,st.c,e)){loseLimb();say(e,"Merci pour le membre !",1.6)}}else{npcLoseLimb(T);npcDamage(T,10,e,st.c)}regrowNpc(e);e.hp=Math.min(e.max,e.hp+15)}else used=false;break;
     case 'riposte':if(d<150){e.parry=durOf(st)}else used=false;break;
-    case 'horloge':if(d<480&&!T.isDecoy){if(isP){if(T.th&&T.th.length>=10&&!T.frew){const idx=Math.max(0,T.th.length-Math.round(Math.min(8,durOf(st))*10));T.frew={pts:T.th.slice(idx).reverse(),t:0,dur:1.4,old:T.th[idx],secs:Math.round((T.th.length-idx)/10),tick:0,n:0};if(T.active)endAbility(T);T.rushing=false;
+    case 'horloge':if(d<480&&!T.isDecoy){if(isP){if(T.th&&T.th.length>=10&&!T.frew){const idx=Math.max(0,T.th.length-Math.round(Math.min(8,durOf(st))*10));T.frew={pts:T.th.slice(idx).reverse(),t:0,dur:.45,old:T.th[idx],secs:Math.round((T.th.length-idx)/10),tick:0,n:0};if(T.active)endAbility(T);T.rushing=false;
         ftext(T.x,T.y-110,'Ton temps est rembobiné !',st.c,22,{skew:true,life:1.1,max:1.1})}else used=false}else if(T.th&&T.th.length>=10&&!T.rewind)forceRewind(T,Math.min(8,durOf(st)),st);else used=false}else used=false;break;
     case 'kleptomane':if(d<130&&!T.isDecoy){if(isP){if(T.weapon){T.weapon=null;ftext(T.x,T.y-100,'Ton arme a été volée !',st.c,20,{skew:true})}else{T.energy=0;if(!T.active)T.abilCd=Math.max(T.abilCd,6);ftext(T.x,T.y-100,'Ton Stand t\'échappe !',st.c,20,{skew:true})}say(e,'Merci pour le prêt !',1.6)}
       else if(T.grunt){if(!T.unarmed){T.unarmed=true;T.atk=0;T.aim=0;if(vis(T.x,T.y,80))ftext(T.x,T.y-90,'Désarmé !',st.c,18,{skew:true})}else used=false}else T.stolen=6}else used=false;break;
@@ -1813,9 +1813,9 @@ function useWeapon(p,st,il,ix,iy){if(p.wcd>0)return;const W=p.weapon;
 function interruptNpc(e){e.rushT=0;e.teleT=0;e.adash=null;e.dice=null;e.parry=0;e.atk=0;e.aim=0;e.rod=null;e.rodT=0;e.elec=0;e.wire=null;e.loco=null;e.sketch=0;
   if(S.ts.active>0&&S.ts.by===e)S.ts.active=Math.min(S.ts.active,.0001);e.abilCd=Math.max(e.abilCd||0,4)}
 function forceRewind(e,secs,st){const th=e.th;const idx=Math.max(0,th.length-Math.round(secs*10));const old=th[idx];
-  e.rewind={pts:th.slice(idx).reverse(),t:0,dur:2,old,secs:Math.round((th.length-idx)/10),c:st.c,tick:0,n:0};interruptNpc(e);
+  e.rewind={pts:th.slice(idx).reverse(),t:0,dur:.5,old,secs:Math.round((th.length-idx)/10),c:st.c,tick:0,n:0};interruptNpc(e);
   ftext(e.x,e.y-110,'Horloge inverse !',st.c,24,{skew:true,life:1,max:1});if(e.grunt===undefined||!e.grunt)say(e,'Mon temps… recule ?!',1.6)}
-function rewindStep(e,dt){const R=e.rewind;R.t+=dt;const k=Math.min(1,R.t/R.dur);R.tick-=dt;if(R.tick<=0&&k<1){R.tick=.17-.11*k;sfxTick(R.n++%2,vis(e.x,e.y,200)?1:.4)}const q=R.pts[Math.min(R.pts.length-1,Math.floor(k*(R.pts.length-1)))];e.x=q.x;e.y=q.y;e.sx=e.x-16;e.sy=e.y-30;
+function rewindStep(e,dt){const R=e.rewind;R.t+=dt;const k=Math.min(1,R.t/R.dur);const q=R.pts[Math.min(R.pts.length-1,Math.floor(k*(R.pts.length-1)))];e.x=q.x;e.y=q.y;e.sx=e.x-16;e.sy=e.y-30;
   if(Math.random()<.7)S.parts.push({x:e.x,y:e.y-24,vx:0,vy:0,life:.45,max:.45,r:11,c:R.c,shape:0,grav:0,rot:0});
   if(k>=1){e.rewind=null;e.x=R.old.x;e.y=R.old.y;unstick(e,13);e.hp=Math.min(e.hp,R.old.hp);if(e.limbs&&R.old.limbs)for(const l in e.limbs)e.limbs[l]=e.limbs[l]&&R.old.limbs[l]?1:0;
     e.th=[];e.stun=Math.max(e.stun||0,.4);e.kx=e.ky=0;burst(e.x,e.y-24,18,R.c,240,5,.5);if(vis(e.x,e.y,100))ftext(e.x,e.y-100,'Retour à il y a '+R.secs+' s',R.c,17,{life:1,max:1,font:FB})}}
@@ -2114,8 +2114,8 @@ function drawSketch(o,st){const x=o.x,y=o.y;ell(x,y,60,24,[.06,.06,.1],.85);ell(
   ring(x,y-1,28,1,[.95,.93,.86],.5)}
 function drawPowers(){const p=S.player;
   const RIP=p&&STANDS[p.si].id==='riposte';
-  for(const e of S.npcs)if(e.rewind&&vis(e.x,e.y,150)){const R=e.rewind;for(let i=0;i<R.pts.length;i+=4){const q=R.pts[i];circ(q.x,q.y-24,9,R.c,.22,6)}}
-  if(p&&p.frew){for(let i=0;i<p.frew.pts.length;i+=4){const q=p.frew.pts[i];circ(q.x,q.y-24,9,STANDS[SI('horloge')].c,.22,6)}}
+  for(const e of S.npcs)if(e.rewind&&vis(e.x,e.y,150)){const R=e.rewind;for(let i=0;i<R.pts.length;i+=4){const q=R.pts[i];circ(q.x,q.y-24,9,R.c,.22,6)}clockGlyph(e.x,e.y-70,R.c)}
+  if(p&&p.frew){for(let i=0;i<p.frew.pts.length;i+=4){const q=p.frew.pts[i];circ(q.x,q.y-24,9,STANDS[SI('horloge')].c,.22,6)}clockGlyph(p.x,p.y-70,STANDS[SI('horloge')].c)}
   if(p&&p.dead<=0&&STANDS[p.si].id==='horloge'&&p.abilCd<=0){let tg=null,bd=520;for(const e of S.npcs){if(e.state==='down'||e.rewind||!e.th||e.th.length<10)continue;const d=Math.hypot(e.x-p.x,e.y-p.y);if(d<bd){bd=d;tg=e}}
     if(tg){const c=STANDS[p.si].c;ring(tg.x,tg.y-30,38,2,c,.45+.25*Math.sin(S.time*5));const n=Math.min(tg.th.length,Math.round(Math.min(8,durOf(STANDS[p.si]))*10));for(let i=tg.th.length-n;i<tg.th.length;i+=6){const q=tg.th[i];circ(q.x,q.y-24,4,c,.35)}}}
   if(p&&p.dead<=0&&p.weapon){const ang=Math.atan2(p.fy,p.fx),hx=p.x+p.fx*12-p.fy*9,hy=p.y-20+p.fy*5;
@@ -2384,18 +2384,6 @@ function drawOverlay(){
   g.font=`${22*u}px ${FD}`;g.lineWidth=4*u;
   for(const e of S.npcs){if(e.state==='down'||e.invis>0||!vis(e.x,e.y,100))continue;if(e.teleT>0||e.atk>0||(e.aim>0&&e.aim<.35)){const X=SX(e.x)+18*u,Y=SY(e.y-(e.grunt?96:110));g.strokeStyle='rgba(20,13,34,.9)';g.strokeText('!',X,Y);g.fillStyle='#ff3a4a';g.fillText('!',X,Y)}}
   if(MAP.overlay)MAP.overlay(g,SX,SY,u);
-  {const hc=rgb(STANDS[SI('horloge')].c);const ents=S.npcs.filter(e=>e.rewind&&vis(e.x,e.y,200)).map(e=>[e,e.rewind]);if(p&&p.frew)ents.push([p,p.frew]);
-    for(const [e,R] of ents){const k=Math.min(1,R.t/R.dur),X=SX(e.x),Y=SY(e.y-150),Rr=58*u;g.save();
-      g.globalAlpha=k<.1?k/.1:k>.92?(1-k)/.08:1;g.fillStyle='rgba(20,13,34,.82)';g.beginPath();g.arc(X,Y,Rr+8*u,0,7);g.fill();
-      g.fillStyle='#f2ead6';g.beginPath();g.arc(X,Y,Rr,0,7);g.fill();g.strokeStyle=hc;g.lineWidth=4*u;g.stroke();
-      g.strokeStyle='#3a2a1c';for(let i=0;i<60;i++){const a=i/60*6.283,l=i%5?4*u:10*u;g.lineWidth=(i%5?1.2:2.4)*u;g.beginPath();g.moveTo(X+Math.cos(a)*(Rr-3*u),Y+Math.sin(a)*(Rr-3*u));g.lineTo(X+Math.cos(a)*(Rr-3*u-l),Y+Math.sin(a)*(Rr-3*u-l));g.stroke()}
-      const am=-Math.PI/2-k*6*Math.PI,ah=-Math.PI/2+1.2-k*1.4;g.lineCap='round';
-      g.strokeStyle='#1a1410';g.lineWidth=5*u;g.beginPath();g.moveTo(X,Y);g.lineTo(X+Math.cos(ah)*Rr*.5,Y+Math.sin(ah)*Rr*.5);g.stroke();
-      g.strokeStyle=hc;g.lineWidth=3.5*u;g.beginPath();g.moveTo(X,Y);g.lineTo(X+Math.cos(am)*Rr*.82,Y+Math.sin(am)*Rr*.82);g.stroke();
-      g.fillStyle='#1a1410';g.beginPath();g.arc(X,Y,5*u,0,7);g.fill();
-      g.strokeStyle=hc;g.lineWidth=3*u;g.beginPath();g.arc(X,Y,Rr+16*u,-Math.PI/2,-Math.PI/2-k*6.283,true);g.stroke();
-      g.font=`${15*u}px ${FD}`;g.fillStyle='#f4eeff';g.textAlign='center';g.textBaseline='middle';g.lineWidth=4*u;g.strokeStyle='rgba(20,13,34,.9)';
-      const lab='−'+(R.secs*(1-k)).toFixed(1)+' s';g.strokeText(lab,X,Y+Rr+30*u);g.fillText(lab,X,Y+Rr+30*u);g.restore()}}
   if(S.markers.length&&p){const ai=p.tpIdx%S.markers.length;g.font=`${12*u}px ${FD}`;g.lineWidth=4*u;g.strokeStyle='rgba(20,13,34,.9)';
     S.markers.forEach((m,i)=>{if(!vis(m.x,m.y,60))return;const X=SX(m.x),Y=SY(m.y-62);const t='n°'+(i+1)+(i===ai?' · prochain':'');
       g.strokeText(t,X,Y);g.fillStyle=i===ai?'#f2c14e':'#f4eeff';g.fillText(t,X,Y)})}
