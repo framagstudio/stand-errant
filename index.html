@@ -1189,7 +1189,7 @@ function hitNPC(e,dmg,kx,ky,stun,c){
    if(e.rodT>0&&e.rod&&e.rod!==p){const R=e.rod;S.bolts.push({pts:[{x:e.x,y:e.y-24},{x:R.x,y:R.y-24}],life:.25});if(S.time-(e.rodMsg||0)>.5){e.rodMsg=S.time;ftext(e.x,e.y-100,'Détourné !',[1,.9,.3],18,{skew:true,life:.6,max:.6})}
      if(S.npcs.includes(R)&&R.state!=='down'){npcDamage(R,dmg,p,c,120,stun,true);return}}
    if(e.rodT>0&&e.rod===p){S.bolts.push({pts:[{x:e.x,y:e.y-24},{x:p.x,y:p.y-24}],life:.25});hurtPlayer(dmg*.6,e.x,e.y,[1,.9,.3]);return}
-   e.tgt=p;e.tgtT=1.2;e.lastBy=p}if(e.shield>0&&e.state==='aggro'){if(S.time-(e.blockT||0)>.25){e.blockT=S.time;sfxPing(1900,.3);ftext(e.x,e.y-70,'BLOQUÉ',[.92,.56,.92],16,{life:.45,max:.45})}return}const p=S.player;const st=STANDS[p.si];dmg*=SET.dmgOut*(e.pinMult||1);
+   revealNPC(e);e.tgt=p;e.tgtT=1.2;e.lastBy=p}if(e.shield>0&&e.state==='aggro'){if(S.time-(e.blockT||0)>.25){e.blockT=S.time;sfxPing(1900,.3);ftext(e.x,e.y-70,'BLOQUÉ',[.92,.56,.92],16,{life:.45,max:.45})}return}const p=S.player;const st=STANDS[p.si];dmg*=SET.dmgOut*(e.pinMult||1);
   let crit=Math.random()<lv(st,'Pr')*.04;if(crit)dmg*=1.6;
   if(p.invis>0)dmg*=2;
   e.hp-=dmg;e.kx+=kx;e.ky+=ky;e.stun=Math.max(e.stun,stun);e.hitFlash=.1;sfxHit(1+p.si*.04,crit?1.3:.9);
@@ -1223,11 +1223,13 @@ function loseLimb(pref){const p=S.player;if(!p||!p.limbs||p.dead>0)return;const 
   say(p,arm?'Mon '+LIMB_NAMES[k]+' ! Mes coups vont faiblir…':'Ma '+LIMB_NAMES[k]+' ! Je vais avoir du mal à avancer…',2.4)}
 function regrowOne(p){const k=Object.keys(p.limbs).find(k=>!p.limbs[k]);if(!k)return;p.limbs[k]=1;ftext(p.x,p.y-96,LIMB_NAMES[k][0].toUpperCase()+LIMB_NAMES[k].slice(1)+' régénéré'+(k[1]==='a'?'':'e'),[.5,1,.6],18,{life:1.1,max:1.1,font:FB})}
 function regrowAll(p){for(const k in p.limbs)p.limbs[k]=1;ftext(p.x,p.y-104,'Membres régénérés',[.5,1,.6],20,{life:1.2,max:1.2,font:FB})}
+/* Fait découvrir un utilisateur de Stand (nom, Stand, pouvoir) dès que le joueur le croise, même s'il est déjà en plein combat. */
+function revealNPC(e){if(e.met||e.grunt||S.mode!=='play')return;const st=STANDS[e.si];e.met=true;sfxMenace();banner('Utilisateur de Stand',e.name,'Stand : '+st.name+' · '+st.ab,st.c)}
 function encounter(e,attacked){
   e.tgt=S.player;e.tgtT=1.2;
   if(e.grunt){e.state='aggro';e.cd=attacked?.3:.8;if(!attacked)say(e,e.u.line,2);return}
   const st=STANDS[e.si];
-  if(!e.met){e.met=true;sfxMenace();banner('Utilisateur de Stand',e.name,'Stand : '+st.name+' · '+st.ab,st.c)}
+  revealNPC(e);
   e.state='aggro';e.windup=attacked?.25:1.3;e.abilCd=2+Math.random()*2.5;say(e,e.u.line,3.4);
 }
 function defeatNPC(e){
@@ -1480,6 +1482,7 @@ function updateNPC(e,dt){
   if(e.state==='down'){e.downT+=dt;return}
   e.slowMul=(e.wire?1:zoneEffects(e,false,dt))*(S_FX.sandSlow>0?.4:1)*(1-Math.min(.6,(e.beadN||0)*.12))*LEGF[npcLegs(e)];
   if(e.possessed){e.rushT=0;standFollow(e,reach,dt,false);return}
+  {const P=S.player;if(!e.met&&P&&P.dead<=0&&Math.hypot(P.x-e.x,P.y-e.y)<320)revealNPC(e)}
   const T=updateTarget(e,dt);
   if(e.state==='idle'||!T){
     idleWander(e,dt,55);
