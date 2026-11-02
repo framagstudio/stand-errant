@@ -8,10 +8,10 @@ Jeu 2D jouable dans le navigateur, rendu avec WebGPU. Choisis un Stand parmi dix
 
 | Carte | Ce qu'on peut y faire |
 | --- | --- |
-| Saint-Mirage | Ville et canal. La fontaine soigne, les tonneaux rouges explosent, les caisses lâchent des soins. |
-| Archipel de Brumevent | Dix îles reliées par des ponts. Les geysers te projettent d'une île à l'autre. |
-| Temple du Sablier | Pièges à piques qui blessent aussi les ennemis, sables mouvants, oasis qui soignent. Frapper le Grand Sablier ralentit les ennemis. |
-| Fonderie Néon | Lave, tapis roulants, sols électriques par cycles, disjoncteurs qui coupent le courant, portails entre les coins de l'usine. |
+| Manoir Brisebois | Seize pièces et des passages secrets : fausses cloisons à briser, bibliothèques qui pivotent quand on frappe un chandelier mural, cheminées reliées deux par deux, dalle qui lève une grille, lustres à faire tomber, armures qui frappent, et une chambre forte absente du plan avec un calice qui soigne tout. |
+| Beffroi des Rouages | Le cadran d'une horloge géante dans le vide. Les aiguilles balaient le cadran, les engrenages font tourner ce qui se tient dessus, des pendules fauchent les passerelles. La cloche sonne les ennemis, le coucou les picore, le remontoir inverse la mécanique, deux tremplins font voler d'un bout à l'autre. Chrono Noir fige toute la mécanique. |
+
+Tous les ennemis s'affrontent entre eux quand ils se croisent : utilisateurs de Stand, spadassins et tireurs.
 
 ## Sbires et blessures
 
