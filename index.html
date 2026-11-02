@@ -1728,7 +1728,7 @@ function npcPower(e,st,d,dt,T){
   const p=T;e.abilCd-=dt;if(e.abilCd>0||!p||p.dead>0)return;const dx=p.x-e.x,dy=p.y-e.y;const isP=T===S.player;
   const near=clamp(1-d/700,0,1);let used=true;
   switch(st.id){
-    case 'chrono':if(d<420&&S.ts.active<=0){startTimeStop(e,e.x,e.y-24,2.4,hasOst(OST_DIR.chrono));say(e,isP?"Ton temps vient de s’arrêter.":"Le temps est à moi.",2.2);e.rushCd=0}else used=false;break;
+    case 'chrono':if(d<420&&S.ts.active<=0){startTimeStop(e,e.x,e.y-24,durOf(st),hasOst(OST_DIR.chrono));say(e,isP?"Ton temps vient de s’arrêter.":"Le temps est à moi.",2.2);e.rushCd=0}else used=false;break;
     case 'foudre':{const w=d<520&&d>70?wireNearest(e.x,e.y,140):null;if(w){e.wire={e:w.e,t:w.t};e.x=w.px;e.y=w.py;e.elec=1.6;if(!hasOst(OST_DIR.foudre))sfxZap(.9*near)}else used=false;break}
     case 'pantin':if(d<320&&!(p.elec>0)&&!p.air){p.puppet=2.5;p.puppetBy=e;say(e,"Tes jambes m'obéissent, maintenant.",1.8);ftext(p.x,p.y-96,'Contrôles inversés !',st.c,20,{skew:true,life:1.2,max:1.2})}else used=false;break;
     case 'jardin':if(d<300){p.rootT=1.6;e.hp=Math.min(e.max,e.hp+25);ftext(e.x,e.y-80,'+25',[.5,1,.6],20);say(e,"Mes racines te tiennent !",1.6);
@@ -1749,21 +1749,22 @@ function npcPower(e,st,d,dt,T){
     case 'plastic':if(d<480){for(let i=0;i<4;i++){const a=i/4*6.283;S.beads.push({x:e.x+Math.cos(a)*50,y:e.y-20+Math.sin(a)*50,vx:dx/d*80,vy:dy/d*80,t:8,host:null,cool:.3,owner:'enemy',homing:true})}}else used=false;break;
     case 'ventriloque':if(d<500&&!(e.invis>0)){e.invis=2.8;S.decoys.push({isDecoy:true,owner:e,x:e.x,y:e.y,fx:e.fx,fy:e.fy,hp:1,t:4,u:e.u,si:e.si,name:e.name,anim:0});burst(e.x,e.y-24,12,st.c,200,5,.4)}else used=false;break;
     case 'mainbasse':if(d<110&&!T.isDecoy){if(isP){if(hurtPlayer(8*npcDmgMul(e),e.x,e.y,st.c,e)){loseLimb();say(e,"Merci pour le membre !",1.6)}}else{npcLoseLimb(T);npcDamage(T,10,e,st.c)}regrowNpc(e);e.hp=Math.min(e.max,e.hp+15)}else used=false;break;
-    case 'riposte':if(d<150){e.parry=.6}else used=false;break;
-    case 'horloge':if(d<480&&!T.isDecoy){if(isP){if(T.th&&T.th.length>=10&&!T.frew){const idx=Math.max(0,T.th.length-30);T.frew={pts:T.th.slice(idx).reverse(),t:0,dur:1.4,old:T.th[idx],secs:3,tick:0,n:0};if(T.active)endAbility(T);T.rushing=false;
-        ftext(T.x,T.y-110,'Ton temps est rembobiné !',st.c,22,{skew:true,life:1.1,max:1.1})}else used=false}else if(T.th&&T.th.length>=10&&!T.rewind)forceRewind(T,3,st);else used=false}else used=false;break;
-    case 'kleptomane':if(d<130&&!T.isDecoy){if(isP){if(T.weapon){T.weapon=null;ftext(T.x,T.y-100,'Ton arme a été volée !',st.c,20,{skew:true})}else{T.energy=0;if(!T.active)T.abilCd=Math.max(T.abilCd,4);ftext(T.x,T.y-100,'Ton Stand t\'échappe !',st.c,20,{skew:true})}say(e,'Merci pour le prêt !',1.6)}
-      else if(T.grunt){if(!T.unarmed){T.unarmed=true;T.atk=0;T.aim=0;if(vis(T.x,T.y,80))ftext(T.x,T.y-90,'Désarmé !',st.c,18,{skew:true})}else used=false}else T.stolen=4}else used=false;break;
-    case 'paratonnerre':if(d<450&&!T.isDecoy){e.rod=T;e.rodT=3;S.bolts.push({pts:[{x:e.x,y:e.y-24},{x:T.x,y:T.y-24}],life:.4});if(isP)ftext(T.x,T.y-110,'Tu sers de paratonnerre !',st.k,20,{skew:true,life:1.1,max:1.1})}else used=false;break;
+    case 'riposte':if(d<150){e.parry=durOf(st)}else used=false;break;
+    case 'horloge':if(d<480&&!T.isDecoy){if(isP){if(T.th&&T.th.length>=10&&!T.frew){const idx=Math.max(0,T.th.length-Math.round(Math.min(8,durOf(st))*10));T.frew={pts:T.th.slice(idx).reverse(),t:0,dur:1.4,old:T.th[idx],secs:Math.round((T.th.length-idx)/10),tick:0,n:0};if(T.active)endAbility(T);T.rushing=false;
+        ftext(T.x,T.y-110,'Ton temps est rembobiné !',st.c,22,{skew:true,life:1.1,max:1.1})}else used=false}else if(T.th&&T.th.length>=10&&!T.rewind)forceRewind(T,Math.min(8,durOf(st)),st);else used=false}else used=false;break;
+    case 'kleptomane':if(d<130&&!T.isDecoy){if(isP){if(T.weapon){T.weapon=null;ftext(T.x,T.y-100,'Ton arme a été volée !',st.c,20,{skew:true})}else{T.energy=0;if(!T.active)T.abilCd=Math.max(T.abilCd,6);ftext(T.x,T.y-100,'Ton Stand t\'échappe !',st.c,20,{skew:true})}say(e,'Merci pour le prêt !',1.6)}
+      else if(T.grunt){if(!T.unarmed){T.unarmed=true;T.atk=0;T.aim=0;if(vis(T.x,T.y,80))ftext(T.x,T.y-90,'Désarmé !',st.c,18,{skew:true})}else used=false}else T.stolen=6}else used=false;break;
+    case 'paratonnerre':if(d<450&&!T.isDecoy){e.rod=T;e.rodT=durOf(st);S.bolts.push({pts:[{x:e.x,y:e.y-24},{x:T.x,y:T.y-24}],life:.4});if(isP)ftext(T.x,T.y-110,'Tu sers de paratonnerre !',st.k,20,{skew:true,life:1.1,max:1.1})}else used=false;break;
     case 'ariane':if(d<520&&d>90){e.adash={sx:e.x,sy:e.y,t:.42,back:0}}else used=false;break;
     case 'retour':{const h=e.hist&&e.hist[0];if(e.hp<e.max*.45&&h&&h.hp>e.hp+10){burst(e.x,e.y-24,16,st.c,240,5,.5);e.x=h.x;e.y=h.y;e.hp=h.hp;e.sx=e.x;e.sy=e.y-30;e.hist=[];unstick(e,13);if(vis(e.x,e.y,100))ftext(e.x,e.y-96,'Retour en arrière !',st.c,20,{skew:true})}else used=false;break}
     case 'des':e.dice={t:.6,face:1+(Math.random()*6|0)};break;
     default:used=false;
   }
   if(!used){e.abilCd=.4;return}
-  e.abilCd=st.id==='chrono'?12:st.id==='foudre'?7+Math.random()*3:ABIL_DEF[st.id].cd*1.3+1+Math.random()*2;
+  /* mêmes réglages que le joueur : recharge du paramètre, et pour les pouvoirs à durée la recharge ne commence qu'à la fin du pouvoir */
+  {const D=durOf(st);e.abilCd=ENABLED.has(st.id)?cdOf(st)+(D&&CANCEL.has(st.id)?D:0)+Math.random()*.4:ABIL_DEF[st.id].cd*1.3+1+Math.random()*2}
   const h=near>.05?playOst(OST_DIR[st.id],near):null;
-  if(h){if(ENEMY_DUR[st.id])setTimeout(()=>h.stop(.25),ENEMY_DUR[st.id]*1000)}
+  if(h){const ed=['chrono','paratonnerre','riposte'].includes(st.id)?durOf(st):st.id==='horloge'?2:ENEMY_DUR[st.id];if(ed)setTimeout(()=>h.stop(.25),ed*1000)}
   else if(near>.25&&st.id!=='chrono'&&st.id!=='foudre')sfxAbility(st.id);
 }
 /* ---------- Stands : Ventriloque, Main Basse, Riposte, Fil d'Ariane, Retour de Bâton, Coup de Dés ---------- */
@@ -2584,6 +2585,7 @@ function renderSettings(){
   <section class="set-sec"><h3>Pouvoir</h3>
     <label class="fld" for="s-stand"><span>Stand</span><select id="s-stand">${STANDS.map((s,i)=>ENABLED.has(s.id)?`<option value="${i}"${i===setStand?' selected':''}>${s.name} · ${s.ab}</option>`:'').join('')}</select></label>
     ${durHtml}${slider('s-cd','Recharge',a.cd,0,40,.5,'s')}
+    <p class="note">Les ennemis qui portent ce Stand utilisent exactement les mêmes réglages de durée et de recharge.</p>
     <p class="note">${NOTES[st.id]?NOTES[st.id]:st.id==='ancre'?"K pose un marqueur (3 au maximum, le plus ancien est remplacé). L te téléporte au marqueur suivant. La recharge s'applique à la téléportation.":CANCEL.has(st.id)?"Ce pouvoir peut être arrêté avant la fin : appuie de nouveau sur K (ou sur le bouton Pouvoir). La recharge complète démarre dès qu'il s'arrête, que tu l'aies coupé ou qu'il soit arrivé au bout.":"La recharge démarre dès que le pouvoir est lancé."}</p>
   </section>
   <section class="set-sec"><h3>Musique</h3>
