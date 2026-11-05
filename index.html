@@ -96,6 +96,18 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .panel{width:min(100%,440px);display:grid;gap:16px;padding:22px 22px 20px;border-radius:6px;background:linear-gradient(160deg,var(--panel-2),var(--panel));border:1px solid var(--line);box-shadow:0 30px 80px -20px rgba(0,0,0,.7)}
 .panel.wide{width:min(100%,580px)}
+.life-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.life-card{display:grid;gap:6px;justify-items:center;text-align:center;padding:14px 10px 12px;border-radius:6px;cursor:pointer;color:var(--text);font:inherit;
+  background:rgba(255,255,255,.04);border:1px solid rgba(158,242,209,.25);transition:transform .12s,border-color .12s,background .12s}
+.life-card:hover,.life-card:focus-visible{transform:translateY(-2px);border-color:#9ef2d1;background:rgba(158,242,209,.1);outline:none}
+.life-card.last{border-color:#9ef2d1}
+.life-card svg{width:84px;height:64px}
+.life-card b{font-family:var(--display);font-weight:400;font-size:20px;transform:skewX(-6deg)}
+.life-card .stat{font-size:12px;color:#9ef2d1;letter-spacing:.06em}
+.life-card .ld{font-size:13px;color:var(--muted);line-height:1.35}
+.life-card kbd,.life-foot kbd{font-family:var(--display);font-size:11px;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,.12)}
+.life-foot{margin:0;font-size:12px;color:var(--muted);text-align:center}
+@media (max-width:560px){.life-grid{grid-template-columns:1fr}.life-card{grid-template-columns:84px 1fr;justify-items:start;text-align:left}.life-card svg{grid-row:span 4}}
 .panel h2{margin:0;font-family:var(--display);font-weight:400;font-size:28px;line-height:1.05;transform:skewX(-6deg);transform-origin:left;text-wrap:balance}
 .panel h3{margin:0 0 4px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
 .p-btns{display:grid;gap:10px}
@@ -239,6 +251,12 @@ label.btn{display:inline-block}
   </div>
 </div></div>
 
+<div id="lifePick" class="modal" hidden><div class="panel wide" role="dialog" aria-labelledby="lifeT">
+  <p class="kicker">Best Experience · création de vie</p><h2 id="lifeT">Quelle vie veux-tu créer ?</h2>
+  <div class="life-grid" id="lifeGrid"></div>
+  <p class="life-foot"><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> ou clic pour choisir · <kbd>L</kbd> ou <kbd>Entrée</kbd> reprend le dernier choix · <kbd>Échap</kbd> pour fermer</p>
+</div></div>
+
 <div id="settings" class="modal" hidden><div class="panel wide" role="dialog" aria-labelledby="setT">
   <p class="kicker">Réglages de partie</p><h2 id="setT">Paramètres</h2>
   <div id="setBody" style="display:grid;gap:16px"></div>
@@ -269,7 +287,7 @@ const STANDS=[
  {id:'ruche',name:"Ruche d'Ambre",c:[1,.7,.12],k:[.34,.21,.06],cry:'BZZ',crest:'antenna',ab:'Essaim',desc:"Quatre drones-abeilles tournent autour de toi et piquent.",st:{P:'D',V:'A',Po:'B',En:'B',Pr:'B',Pt:'A'},cd:14},
  {id:'pantin',name:'Pantin Pourpre',c:[.88,.2,.36],k:[.98,.84,.55],cry:'GIIII',crest:'strings',ab:'Possession',desc:"Prends le contrôle d'un ennemi proche : fais-le se frapper lui-même, foncer dans les pièges ou cogner ses alliés.",st:{P:'C',V:'B',Po:'A',En:'C',Pr:'A',Pt:'A'},cd:16},
  {id:'ancre',name:'Ancre Nomade',c:[.96,.32,.84],k:[.32,1,.95],cry:'GAKIN',crest:'anchor',ab:'Ancrage',desc:"Pose jusqu'à trois marqueurs dans la ville, puis téléporte-toi sur l'un d'eux en un éclair.",st:{P:'B',V:'B',Po:'B',En:'C',Pr:'A',Pt:'A'},cd:4},
- {id:'best',name:'Best Experience',c:[.62,.95,.82],k:[.98,.52,.58],cry:'MUDA',crest:'sprout',ab:'Annulation',desc:"Après avoir subi une action (dégâts, membre arraché, pouvoir ennemi), tu as quelques secondes pour appuyer sur K : tout est annulé et les responsables reviennent à zéro. L donne vie à une mouche qui pique tes ennemis ; L de nouveau annule cette vie.",st:{P:'A',V:'A',Po:'C',En:'A',Pr:'A',Pt:'A'},cd:14},
+ {id:'best',name:'Best Experience',c:[.62,.95,.82],k:[.98,.52,.58],cry:'MUDA',crest:'sprout',ab:'Annulation',desc:"Après avoir subi une action (dégâts, membre arraché, pouvoir ennemi), tu as quelques secondes pour appuyer sur K : tout est annulé et les responsables reviennent à zéro. L ouvre le choix d'une vie (arbre pour se cacher, mouche, alligator) ; L de nouveau annule cette vie.",st:{P:'A',V:'A',Po:'C',En:'A',Pr:'A',Pt:'A'},cd:14},
  {id:'horloge',name:'Horloge Inverse',c:[.4,.85,.88],k:[.95,.75,.35],cry:'KACHI',crest:'clockface',ab:'Rembobinage forcé',desc:"Remonte le temps d'un ennemi : il revient là où il était quelques secondes plus tôt, sans récupérer sa santé, et son pouvoir est interrompu.",st:{P:'B',V:'B',Po:'A',En:'B',Pr:'B',Pt:'A'},cd:9},
  {id:'kleptomane',name:'Kleptomane',c:[.42,.9,.72],k:[.12,.2,.18],cry:'SURI',crest:'mask',ab:'Vol à la tire',desc:"Vole l'arme d'un sbire pour t'en servir (pistolet ou épée), ou le Stand d'un adversaire pendant quelques secondes.",st:{P:'C',V:'A',Po:'B',En:'C',Pr:'A',Pt:'B'},cd:10},
  {id:'paratonnerre',name:'Paratonnerre',c:[.62,.7,1],k:[1,.9,.3],cry:'GORO',crest:'rod',ab:'Détournement',desc:"Désigne un ennemi : pendant 5 secondes, tous les dégâts que tu devrais prendre le frappent à ta place.",st:{P:'B',V:'C',Po:'A',En:'A',Pr:'B',Pt:'B'},cd:14},
@@ -1338,13 +1356,13 @@ const npcDmgMul=e=>ARMF[npcArms(e)]*(e.rushBoostT>0?2:1)*(e.giant>0?1.5:1);
 function hostileOK(e,h){if(!h||h===e)return false;const p=S.player;
   if(h===p)return p.dead<=0&&!(p.invis>0)&&!(p.sketch>0)&&!p.air&&!p.wire&&!p.reel&&!p.rew&&!p.frew;
   if(h.isDecoy)return h.hp>0&&h.owner!==e&&S.decoys.includes(h);
-  if(h.isLife)return h.owner!==e&&h.born<=0&&!(e.lifeIgnore>0)&&S.lives.includes(h);
+  if(h.isLife)return h.kind!=='tree'&&h.owner!==e&&h.born<=0&&!(e.lifeIgnore>0)&&S.lives.includes(h);
   return S.npcs.includes(h)&&h.state!=='down'&&!h.possessed&&!(h.invis>0)}
 function hostilesOf(e){const L=[];const p=S.player;if(p&&hostileOK(e,p))L.push(p);for(const d of S.decoys)if(hostileOK(e,d))L.push(d);for(const l of S.lives)if(hostileOK(e,l))L.push(l);for(const o of S.npcs)if(hostileOK(e,o))L.push(o);return L}
 function updateTarget(e,dt){e.tgtT=(e.tgtT||0)-dt;
-  if(e.tgt&&(!hostileOK(e,e.tgt)||Math.hypot(e.tgt.x-e.x,e.tgt.y-e.y)>780))e.tgt=null;
+  if(e.tgt&&(!hostileOK(e,e.tgt)||Math.hypot(e.tgt.x-e.x,e.tgt.y-e.y)>780||lifeCover(e,e.tgt)))e.tgt=null;
   if(e.tgtT<=0){e.tgtT=.7;const R=e.state==='aggro'?460:235;let best=null,bd=R;
-    for(const h of hostilesOf(e)){let d=Math.hypot(h.x-e.x,h.y-e.y);if(h.isDecoy&&h.owner==='player')d*=.45;if(d<bd){bd=d;best=h}}
+    for(const h of hostilesOf(e)){if(lifeCover(e,h))continue;let d=Math.hypot(h.x-e.x,h.y-e.y);if(h.isDecoy&&h.owner==='player')d*=.45;if(d<bd){bd=d;best=h}}
     if(best&&(!e.tgt||best!==e.tgt&&bd<Math.hypot(e.tgt.x-e.x,e.tgt.y-e.y)*.6))e.tgt=best}
   return e.tgt}
 function behindOf(T,att){const vx=att.x-T.x,vy=att.y-T.y,l=Math.hypot(vx,vy)||1;return (vx*(T.fx||0)+vy*(T.fy||0))/l<-.3}
@@ -1556,6 +1574,7 @@ function endAbility(p){
 const keys=new Set();S.slowmo=0;let abPressed=false,tpPressed=false;const joy={x:0,y:0};let touchRush=false;
 const GAMEKEYS=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','KeyJ','KeyK','ShiftLeft','ShiftRight','KeyL'];
 addEventListener('keydown',e=>{
+  if(S.lifePick){e.preventDefault();const i={Digit1:0,Digit2:1,Digit3:2,Numpad1:0,Numpad2:1,Numpad3:2}[e.code];if(i!=null)chooseLife(LIFE_ORDER[i]);else if((e.code==='KeyL'||e.key==='Enter')&&!e.repeat)chooseLife(S.lastLife||'fly');else if(e.key==='Escape')closeLifePick();return}
   if(e.key==='Escape'){if(!$('#settings').hidden){closeSettings();return}if(S.mode==='play')setPause(!S.paused);return}
   if(S.mode!=='play'||S.paused)return;if(AC&&AC.state==='suspended')AC.resume();
   if((e.key==='m'||e.key==='M'||e.code==='Semicolon'&&e.key.toLowerCase()==='m')&&!e.repeat){toggleMute();return}if(GAMEKEYS.includes(e.code))e.preventDefault();
@@ -1732,7 +1751,7 @@ function updateNPC(e,dt){
 /* Pouvoir propre à chaque ennemi. Pas de projectiles génériques : seulement leur Stand ou la rafale. */
 function npcPower(e,st,d,dt,T){
   if(S.mode!=='play')return;
-  if(st.id==='best'&&T&&(e.lifeCd||0)<=0&&d<500&&!S.lives.some(l=>l.owner===e)){spawnLife(e,e,st);e.lifeCd=cd2Of(st)}
+  if(st.id==='best'&&T&&(e.lifeCd||0)<=0&&d<500&&!S.lives.some(l=>l.owner===e)){spawnLife(e,e,st,d<200?'gator':'fly');e.lifeCd=cd2Of(st)}
   const p=T;e.abilCd-=dt;if(e.abilCd>0||!p||p.dead>0)return;const dx=p.x-e.x,dy=p.y-e.y;const isP=T===S.player;
   if(T.isLife){if(st.id!=='best'){e.abilCd=cdOf(st);ftext(e.x,e.y-130,'Pouvoir annulé',BEc().c,18,{skew:true,life:.9,max:.9});nullifyNpc(e);return}}
   const near=clamp(1-d/700,0,1);let used=true;
@@ -1849,33 +1868,60 @@ function nullifyNpc(e){if(!e||!S.npcs.includes(e)||e.state==='down')return;if(S.
 function nullifyPlayer(){const p=S.player;if(!p||p.dead>0||S.time<(p.nullCd||0))return;p.nullCd=S.time+1.2;
   const h=p.th&&p.th.length?p.th[Math.max(0,p.th.length-10)]:null;ghostFx(p,h?h.x:p.x,h?h.y:p.y,{shirt:[.17,.18,.33],hair:[.08,.07,.1]});if(h){p.x=h.x;p.y=h.y;unstick(p);p.sx=p.x-16;p.sy=p.y-30}
   p.rushing=false;p.kx=p.ky=0;p.stunT=Math.max(p.stunT||0,.6);if(p.th)p.th.length=0;ftext(p.x,p.y-130,'Ton action est annulée',BEc().c,18,{life:1,max:1,font:FB});sfxUndo()}
+/* Trois vies possibles : l'arbre (abri statique), la mouche (vole, 3 dégâts), l'alligator (lent, 5 dégâts). */
+const LIFE={tree:{name:'Arbre',stat:'Abri · statique',desc:'Un arbre pousse à côté de toi. Cache-toi derrière : les ennemis te perdent de vue et leurs tirs s\'y arrêtent.',dmg:0},
+  fly:{name:'Mouche',stat:'3 dégâts · vole',desc:'Elle survole les obstacles en zigzag et pique sans relâche.',dmg:3,sp:250,every:.6,reach:40},
+  gator:{name:'Alligator',stat:'5 dégâts · lent',desc:'Il rampe lentement vers l\'ennemi le plus proche et mord fort.',dmg:5,sp:95,every:1.1,reach:52}};
+const LIFE_ORDER=['tree','fly','gator'];
+const LIFE_ICON={tree:'<svg viewBox="0 0 84 64" aria-hidden="true"><ellipse cx="42" cy="60" rx="22" ry="4" fill="#000" opacity=".3"/><rect x="38" y="36" width="8" height="24" rx="2" fill="#7a5132"/><circle cx="30" cy="30" r="14" fill="#3f9a6a"/><circle cx="54" cy="30" r="14" fill="#3f9a6a"/><circle cx="42" cy="20" r="17" fill="#55b884"/><circle cx="36" cy="16" r="3" fill="#fa8594"/><circle cx="52" cy="24" r="3" fill="#fa8594"/><circle cx="30" cy="32" r="3" fill="#fa8594"/></svg>',
+  fly:'<svg viewBox="0 0 84 64" aria-hidden="true"><ellipse cx="42" cy="60" rx="14" ry="3" fill="#000" opacity=".3"/><ellipse cx="28" cy="22" rx="17" ry="8" fill="#dcefff" opacity=".7" transform="rotate(-25 28 22)"/><ellipse cx="56" cy="22" rx="17" ry="8" fill="#dcefff" opacity=".7" transform="rotate(25 56 22)"/><ellipse cx="42" cy="38" rx="9" ry="13" fill="#25322a"/><circle cx="42" cy="26" r="8" fill="#1a1a1a"/><circle cx="37" cy="24" r="5" fill="#b8291f"/><circle cx="47" cy="24" r="5" fill="#b8291f"/></svg>',
+  gator:'<svg viewBox="0 0 84 64" aria-hidden="true"><ellipse cx="42" cy="52" rx="34" ry="5" fill="#000" opacity=".3"/><path d="M6 44 Q20 38 30 40 L58 36 L80 40 L58 46 L30 48 Q18 50 6 44Z" fill="#3d6b3a"/><path d="M58 40 L80 40" stroke="#f4f0e0" stroke-width="2" stroke-dasharray="2 3"/><rect x="26" y="46" width="5" height="8" rx="2" fill="#2f5530"/><rect x="46" y="44" width="5" height="9" rx="2" fill="#2f5530"/><circle cx="58" cy="36" r="3" fill="#e9d36a"/><path d="M14 42 L46 39" stroke="#9ef2d1" stroke-width="2" opacity=".6"/></svg>'};
+function buildLifePick(){const g=$('#lifeGrid');g.innerHTML='';LIFE_ORDER.forEach((k,i)=>{const L=LIFE[k];const b=document.createElement('button');b.type='button';b.className='life-card'+(S.lastLife===k?' last':'');
+  b.innerHTML=LIFE_ICON[k]+'<b>'+L.name+'</b><span class="stat"><kbd>'+(i+1)+'</kbd> '+L.stat+'</span><span class="ld">'+L.desc+'</span>';b.addEventListener('click',()=>chooseLife(k));g.appendChild(b)})}
+function openLifePick(){S.lifePick=true;S.paused=true;keys.clear();touchRush=false;joy.x=joy.y=0;const kn=$('#knob');if(kn)kn.style.transform='';buildLifePick();$('#lifePick').hidden=false;const b=$('#lifeGrid').children[Math.max(0,LIFE_ORDER.indexOf(S.lastLife||'fly'))];if(b)b.focus()}
+function closeLifePick(){if(!S.lifePick)return;S.lifePick=false;S.paused=false;$('#lifePick').hidden=true;abPressed=false;tpPressed=false}
+function chooseLife(kind){const p=S.player;closeLifePick();if(!p||p.dead>0||S.mode!=='play')return;const st=STANDS[p.si];S.lastLife=kind;spawnLife(p,'player',st,kind);p.lifeCd=cd2Of(st)}
 function createLife(p,st){const mine=S.lives.find(l=>l.owner==='player');if(mine){cancelLife(mine);return}
-  if((p.lifeCd||0)>0){if(S.time-(p.lifeMsg||0)>.8){p.lifeMsg=S.time;ftext(p.x,p.y-90,'Mouche dans '+p.lifeCd.toFixed(1)+' s',st.c,15,{life:.8,max:.8,font:FB})}return}
-  spawnLife(p,'player',st);p.lifeCd=cd2Of(st)}
-/* Annule une vie : la mouche se défait et, si elle venait d'un objet, l'objet revient à sa place. */
+  if((p.lifeCd||0)>0){if(S.time-(p.lifeMsg||0)>.8){p.lifeMsg=S.time;ftext(p.x,p.y-90,'Nouvelle vie dans '+p.lifeCd.toFixed(1)+' s',st.c,15,{life:.8,max:.8,font:FB})}return}
+  openLifePick()}
+/* Un arbre de vie entre deux personnages les cache l'un à l'autre. */
+function lifeCover(a,b){if(!S.lives.length)return false;for(const l of S.lives){if(l.kind!=='tree'||!l.tp||l.born>0)continue;const t=l.tp;
+    const dx=b.x-a.x,dy=b.y-a.y,L2=dx*dx+dy*dy||1,q=clamp(((t.x-a.x)*dx+(t.y-a.y)*dy)/L2,0,1);if(q<=0||q>=1)continue;
+    if(Math.hypot(a.x+dx*q-t.x,a.y+dy*q-t.y)<t.r+8&&Math.hypot(b.x-t.x,b.y-t.y)<t.r+110)return true}return false}
+function freeSpot(x,y,r,max=160){for(let rad=0;rad<=max;rad+=16)for(let n=0;n<(rad?12:1);n++){const a=n/12*6.283,X=clamp(x+Math.cos(a)*rad,80,3520),Y=clamp(y+Math.sin(a)*rad,80,3520);if(!solid(X,Y,r))return [X,Y]}return null}
+/* Annule une vie : elle se défait et, si elle venait d'un objet, redevient cet objet là où elle se trouve. */
 function cancelLife(l){const i=S.lives.indexOf(l);if(i<0)return;S.lives.splice(i,1);
-  let tx=l.x,ty=l.y;if(l.prop){const r=l.prop.r||16;let ok=false;for(let rad=0;rad<=160&&!ok;rad+=16)for(let n=0;n<(rad?12:1);n++){const a=n/12*6.283,x=clamp(l.x+Math.cos(a)*rad,80,3520),y=clamp(l.y+Math.sin(a)*rad,80,3520);if(!solid(x,y,r)){tx=x;ty=y;ok=true;break}}if(!ok){tx=l.px;ty=l.py}}
-  S.undoFx.push({kind:'unfly',x0:l.x,y0:l.y-(l.h||34),x1:tx,y1:ty-14,t:0,max:.45,c:l.c,k:l.k});
-  if(vis(l.x,l.y,100))ftext(l.x,l.y-90,'Vie annulée',l.c,16,{life:.9,max:.9,font:FB});
+  if(l.tp){removeProp(l.tp);NAV.dirty=true;miniStatic=null}
+  let tx=l.x,ty=l.y;if(l.prop){const fs=freeSpot(l.x,l.y,l.prop.r||16);if(fs){tx=fs[0];ty=fs[1]}else{tx=l.px;ty=l.py}}
+  S.undoFx.push({kind:'unlife',life:l.kind,x0:l.x,y0:l.y,x1:tx,y1:ty,h:l.h||0,fx:l.fx,fy:l.fy,t:0,max:.5,c:l.c,k:l.k});
+  if(vis(l.x,l.y,100))ftext(l.x,l.y-(l.kind==='tree'?150:90),'Vie annulée',l.c,16,{life:.9,max:.9,font:FB});
   if(l.prop){const t=l.prop;t.x=tx;t.y=ty;if(t.hp!=null&&t.kind!=='barrel')t.hp=Math.max(t.hp,1);t.fuse=0;t.hitT=0;t.popT=.35;trees.push(t);NAV.dirty=true;miniStatic=null;for(const e of mechEnts())if(Math.hypot(e.x-t.x,e.y-t.y)<t.r+14)unstick(e)}}
-function spawnLife(src,owner,st){for(const o of S.lives.filter(l=>l.owner===owner))cancelLife(o);
+function spawnLife(src,owner,st,kind='fly'){for(const o of S.lives.filter(l=>l.owner===owner))cancelLife(o);
   let src2=null,bd=170;for(const t of trees){if(t.ghost||t.mv||!['crate','cookie','barrel','urn','sugar','rock','pipe'].includes(t.kind))continue;const d=Math.hypot(t.x-src.x,t.y-src.y);if(d<bd){bd=d;src2=t}}
-  let x,y;if(src2){x=src2.x;y=src2.y;removeProp(src2);NAV.dirty=true;miniStatic=null}else{x=src.x+(src.fx||0)*80;y=src.y+(src.fy||1)*80;if(solid(x,y,14)){x=src.x;y=src.y}}
-  S.lives.push({isLife:true,owner,x,y,h:34,fx:0,fy:1,t:18,bite:0,anim:0,c:st.c,k:st.k,born:.7,buzz:0,seed:Math.random()*9,from:src2?src2.kind:null,prop:src2,px:src2?src2.x:0,py:src2?src2.y:0});
-  if(vis(x,y,100))ftext(x,y-96,src2?'Prends vie !':'Naissance !',st.c,20,{skew:true,life:.9,max:.9});sfxHourglass()}
+  let x,y;if(src2){x=src2.x;y=src2.y;removeProp(src2);NAV.dirty=true;miniStatic=null}else{x=src.x+(src.fx||0)*(kind==='tree'?90:80);y=src.y+(src.fy||1)*(kind==='tree'?90:80)}
+  if(kind!=='fly'){const r=kind==='tree'?30:16;const fs=freeSpot(x,y,r);if(fs){x=fs[0];y=fs[1]}else{x=src.x;y=src.y}}
+  const l={isLife:true,kind,owner,x,y,h:kind==='fly'?34:0,fx:src.fx||0,fy:src.fy||1,t:18,bite:0,anim:0,c:st.c,k:st.k,born:.7,buzz:0,seed:Math.random()*9,from:src2?src2.kind:null,prop:src2,px:src2?src2.x:0,py:src2?src2.y:0};
+  if(kind==='tree'){l.tp={kind:'lifetree',x,y,r:30,h:Math.random(),s:1,c:st.c,k:st.k,life:l};trees.push(l.tp);NAV.dirty=true;miniStatic=null;
+    for(const e of mechEnts())if(Math.hypot(e.x-x,e.y-y)<44){const a=Math.atan2(e.y-y,e.x-x)||0;e.x=x+Math.cos(a)*46;e.y=y+Math.sin(a)*46;unstick(e)}}
+  S.lives.push(l);
+  if(vis(x,y,100))ftext(x,y-(kind==='tree'?160:96),src2?'Prends vie !':'Naissance !',st.c,20,{skew:true,life:.9,max:.9});sfxHourglass()}
+
 function lifeHostiles(l){const L=[];const p=S.player;if(l.owner!=='player'&&p&&p.dead<=0&&!p.air)L.push(p);for(const e of S.npcs)if(e!==l.owner&&e.state!=='down'&&!(e.invis>0))L.push(e);return L}
-/* La mouche vole par-dessus les obstacles, en zigzag, et pique la cible la plus proche. */
+/* La mouche vole par-dessus les obstacles en zigzag ; l'alligator rampe en contournant les murs ; l'arbre ne bouge pas. */
 function updateLives(dt){for(let i=S.lives.length-1;i>=0;i--){const l=S.lives[i];if(l.owner!=='player'&&frozenFor(l.owner))continue;if(l.owner==='player'&&playerFrozen())continue;
-    l.t-=dt;l.born-=dt;l.bite-=dt;l.buzz-=dt;l.anim+=dt;if(l.t<=0||(l.owner!=='player'&&(!S.npcs.includes(l.owner)||l.owner.state==='down'))){cancelLife(l);continue}
-    if(l.born>0)continue;if(l.buzz<=0){l.buzz=.9+Math.random()*.5;if(vis(l.x,l.y,40))sfxBuzz(.8)}
-    let T=null,bd=560;for(const h of lifeHostiles(l)){const d=Math.hypot(h.x-l.x,h.y-l.y);if(d<bd){bd=d;T=h}}
-    let tx,ty,sp=250;if(T){tx=T.x;ty=T.y;l.fx=(T.x-l.x)/(bd||1);l.fy=(T.y-l.y)/(bd||1)}else{const o=l.owner==='player'?S.player:l.owner;if(!o)continue;const a=l.anim*1.6+l.seed;tx=o.x+Math.cos(a)*70;ty=o.y+Math.sin(a)*45;sp=200}
-    const dx=tx-l.x,dy=ty-l.y,d=Math.hypot(dx,dy)||1,wob=Math.sin(l.anim*11+l.seed)*.9;
-    if(!T||d>34){const vx=dx/d,vy=dy/d;const mv=Math.min(d,sp*dt);l.x=clamp(l.x+(vx-vy*wob)*mv,60,3540);l.y=clamp(l.y+(vy+vx*wob)*mv,60,3540);if(!T){l.fx=vx;l.fy=vy}}
-    l.h=34+Math.sin(l.anim*5+l.seed)*6;
-    if(T&&d<=40&&l.bite<=0){l.bite=.6;l.dive=.18;const own=l.owner==='player'?null:l.owner;if(T===S.player)hurtPlayer(7,l.x,l.y,l.c,own);else if(l.owner==='player')hitNPC(T,7,l.fx*120,l.fy*120,.25,l.c);else npcDamage(T,7,own,l.c,120,.25);
-      if(vis(l.x,l.y,80)){burst(T.x,T.y-28,5,l.k,170,3,.3,4);ftext(T.x+(Math.random()-.5)*20,T.y-70,'Piqûre !',l.c,13,{life:.5,max:.5,font:FB})}}
-    l.dive=(l.dive||0)-dt}}
+    l.t-=dt;l.born-=dt;l.bite-=dt;l.buzz-=dt;l.anim+=dt;l.dive=(l.dive||0)-dt;if(l.t<=0||(l.owner!=='player'&&(!S.npcs.includes(l.owner)||l.owner.state==='down'))){cancelLife(l);continue}
+    if(l.born>0||l.kind==='tree')continue;const K=LIFE[l.kind];
+    if(l.kind==='fly'&&l.buzz<=0){l.buzz=.9+Math.random()*.5;if(vis(l.x,l.y,40))sfxBuzz(.8)}
+    let T=null,bd=l.kind==='gator'?420:560;for(const h of lifeHostiles(l)){const d=Math.hypot(h.x-l.x,h.y-l.y);if(d<bd){bd=d;T=h}}
+    const o=l.owner==='player'?S.player:l.owner;if(!o)continue;let tx,ty,sp=K.sp;
+    if(T){tx=T.x;ty=T.y}else{const a=l.anim*(l.kind==='fly'?1.6:.5)+l.seed;tx=o.x+Math.cos(a)*70;ty=o.y+Math.sin(a)*45;sp*=.8}
+    const dx=tx-l.x,dy=ty-l.y,d=Math.hypot(dx,dy)||1;l.moving=false;
+    if(l.kind==='fly'){const wob=Math.sin(l.anim*11+l.seed)*.9;if(!T||d>34){const vx=dx/d,vy=dy/d,mv=Math.min(d,sp*dt);l.x=clamp(l.x+(vx-vy*wob)*mv,60,3540);l.y=clamp(l.y+(vy+vx*wob)*mv,60,3540);l.fx=vx;l.fy=vy}else{l.fx=dx/d;l.fy=dy/d}l.h=34+Math.sin(l.anim*5+l.seed)*6}
+    else if(d>(T?K.reach-8:40)){const nd=navDir(l,tx,ty,dt);const vx=nd[0],vy=nd[1],mv=Math.min(d,sp*dt);const nx=l.x+vx*mv,ny=l.y+vy*mv;
+      if(!solid(nx,ny,14)){l.x=nx;l.y=ny}else if(!solid(nx,l.y,14))l.x=nx;else if(!solid(l.x,ny,14))l.y=ny;l.fx+=(vx-l.fx)*Math.min(1,dt*6);l.fy+=(vy-l.fy)*Math.min(1,dt*6);const fl=Math.hypot(l.fx,l.fy)||1;l.fx/=fl;l.fy/=fl;l.moving=true}
+    else if(T){l.fx=dx/d;l.fy=dy/d}
+    if(T&&d<=K.reach&&l.bite<=0){l.bite=K.every;l.dive=.18;const own=l.owner==='player'?null:l.owner;if(T===S.player)hurtPlayer(K.dmg,l.x,l.y,l.c,own);else if(l.owner==='player')hitNPC(T,K.dmg,l.fx*120,l.fy*120,.25,l.c);else npcDamage(T,K.dmg,own,l.c,120,.25);
+      if(l.kind==='gator')sfxHit(.5,.6);if(vis(l.x,l.y,80)){burst(T.x,T.y-28,l.kind==='gator'?8:5,l.k,170,3,.3,4);ftext(T.x+(Math.random()-.5)*20,T.y-70,l.kind==='gator'?'Morsure !':'Piqûre !',l.c,13,{life:.5,max:.5,font:FB})}}}}
 /* Coup porté contre une mouche : il est annulé et l'attaquant est renvoyé. */
 function hitLife(att){if(att===S.player)nullifyPlayer();else nullifyNpc(att)}
 function drawFly(x,y,h,fx,fy,c,k,al=1,sc=1.25){const by=y-h,a=Math.atan2(fy||.001,fx||1),ca=Math.cos(a),sa=Math.sin(a);
@@ -1885,6 +1931,22 @@ function drawFly(x,y,h,fx,fy,c,k,al=1,sc=1.25){const by=y-h,a=Math.atan2(fy||.00
   const ab=mix([.1,.16,.12],c,.3);ell(x-ca*8*sc,by-sa*6*sc,22*sc,15*sc,ab,al,0,a);ell(x-ca*8*sc,by-sa*6*sc,6*sc,14*sc,mul(ab,.6),.8*al,0,a);ell(x-ca*11*sc,by-sa*8*sc,5*sc,12*sc,mul(ab,.6),.8*al,0,a);
   ell(x,by,15*sc,13*sc,[.15,.2,.16],al,0,a);ell(x-2,by-3,8*sc,5*sc,c,.55*al,0,a);
   const hx=x+ca*9*sc,hy=by+sa*7*sc;circ(hx,hy,6*sc,[.1,.1,.1],al);for(const s2 of [-1,1]){const ex=hx-sa*4*s2*sc,ey=hy+ca*3.4*s2*sc;circ(ex,ey,4.6*sc,[.72,.16,.12],al);circ(ex-1,ey-1.4,1.4*sc,WHITE,.85*al)}}
+
+function drawGator(x,y,fx,fy,c,k,al=1,sc=1,bite=0,moving=false){const a=Math.atan2(fy||.001,fx||1),ca=Math.cos(a),sa=Math.sin(a)*.6,px=-sa,py=ca;
+  const P=(f,s)=>[x+ca*f*sc+px*s*sc,y-10*sc+sa*f*sc+py*s*sc*.6];const body=mix([.24,.42,.23],c,.18),belly=mix([.6,.66,.42],c,.2),dark=mul(body,.7);
+  ell(x,y+4,60*sc,14*sc,BLACK,.25*al,0,Math.atan2(sa,ca));
+  const sw=Math.sin(S.time*(moving?9:3))*(moving?7:3);for(let n=0;n<5;n++){const q=P(-30-n*9,sw*(n/4)*(n/4));circ(q[0],q[1],(10-n*1.7)*sc,n%2?dark:body,al)}
+  const st=moving?Math.sin(S.time*12):0;for(const [f,s,ph] of [[14,1,1],[14,-1,-1],[-16,1,-1],[-16,-1,1]]){const q=P(f+st*ph*4,s*13);circ(q[0],q[1]+3*sc,5*sc,dark,al)}
+  for(let n=0;n<4;n++){const q=P(14-n*12,0);ell(q[0],q[1],15*sc,12*sc,body,al,0,Math.atan2(sa,ca));const r=P(14-n*12,0);circ(r[0],r[1]-4*sc,3*sc,dark,al)}
+  const ln=P(-16,0),lm=P(12,0);line(ln[0],ln[1]-1,lm[0],lm[1]-1,2,c,.5*al);
+  const op=bite>0?.5:.08;const h=P(30,0);ell(h[0],h[1],13*sc,10*sc,body,al,0,Math.atan2(sa,ca));
+  const j1=P(48,-4-op*14),j2=P(48,4+op*14),hb=P(30,0);line(hb[0],hb[1],j1[0],j1[1],7*sc,body,al);line(hb[0],hb[1],j2[0],j2[1],7*sc,belly,al);
+  for(let n=1;n<4;n++){const t1=[hb[0]+(j1[0]-hb[0])*n/4,hb[1]+(j1[1]-hb[1])*n/4];const t2=[hb[0]+(j2[0]-hb[0])*n/4,hb[1]+(j2[1]-hb[1])*n/4];circ(t1[0],t1[1]+2,1.5*sc,WHITE,.9*al);circ(t2[0],t2[1]-2,1.5*sc,WHITE,.9*al)}
+  for(const s2 of [-1,1]){const e=P(30,s2*6);circ(e[0],e[1]-6*sc,3.6*sc,[.9,.8,.3],al);circ(e[0],e[1]-6*sc,1.4*sc,BLACK,al)}}
+function drawLifeTree(x,y,c,k,al=1,g=1){const s=g;ell(x+10,y+6,70*s,22*s,BLACK,.28*al);box(x,y-30*s,16*s,64*s,[.45,.3,.19],al,4);box(x-3*s,y-30*s,5*s,60*s,[.56,.38,.24],al*.8,3);
+  const lf=mix([.24,.55,.36],c,.35),lf2=mix([.33,.68,.47],c,.35),sw=Math.sin(S.time*1.3+x*.01)*2;
+  for(const [dx,dy,r,col] of [[-24,-70,30,lf],[24,-70,30,lf],[0,-96,34,lf2],[-12,-80,22,lf2],[16,-88,20,lf2]])circ(x+(dx+sw)*s,y+dy*s,r*s,col,al);
+  for(let n=0;n<6;n++){const a=n*1.9+x*.01;circ(x+(Math.cos(a)*28+sw)*s,y+(-84+Math.sin(a)*20)*s,3.4*s,k,.9*al)}}
 
 /* ---------- Horloge Inverse : rembobinage forcé ---------- */
 function interruptNpc(e){e.rushT=0;e.teleT=0;e.adash=null;e.dice=null;e.parry=0;e.atk=0;e.aim=0;e.rod=null;e.rodT=0;e.elec=0;e.wire=null;e.loco=null;e.sketch=0;
@@ -2056,6 +2118,7 @@ function updateWorld(dt){
     b.x+=b.vx*dt;b.y+=b.vy*dt;
     let dead=b.life<=0||b.x<0||b.y<0||b.x>WS||b.y>WS||(b.owner==='enemy'&&inkHit(null,b.x,b.y,b.r));
     if(!dead&&b.kind!=='blade'){for(const bd of buildings)if(rectHit(bd,b.x,b.y+20,0)){dead=true;break}}
+    if(!dead&&b.owner==='enemy'){for(const t of trees)if(t.kind==='lifetree'&&Math.hypot(t.x-b.x,t.y-30-b.y)<t.r+b.r){dead=true;burst(b.x,b.y,6,t.c,120,3,.3,3);break}}
     if(!dead&&b.owner==='player'){for(const t of trees){if((t.kind==='barrel'||t.kind==='crate'||t.kind==='urn')&&Math.hypot(t.x-b.x,t.y-14-b.y)<b.r+t.r){propHit(t);if(b.kind!=='blade')dead=true;break}}}
     if(!dead&&b.owner==='player'){for(const e of S.npcs){if(e.state==='down')continue;if(Math.hypot(e.x-b.x,e.y-24-b.y)<b.r+18){
       if(e.shield>0&&e.state==='aggro'){sfxPing(2200,.3);b.owner='enemy';b.vx*=-1.2;b.vy*=-1.2;b.c=STANDS[e.si].c;b.life=1.4;b.homing=false;break}
@@ -2198,10 +2261,12 @@ function drawPowers(){const p=S.player;
   for(const r of S.rings){if(!vis(r.x,r.y,Math.abs(r.r)+60))continue;const k=r.t/r.max;if(r.r<0){const R=-r.r*(1-k)+4;ring(r.x,r.y,R,4,r.c,.9);ring(r.x,r.y,R*.6,2,WHITE,.7)}else{ring(r.x,r.y,20+k*r.r,6*(1-k)+1,r.c,1-k);ring(r.x,r.y,k*r.r*.7,3,WHITE,.5*(1-k))}}
   const RIP=p&&STANDS[p.si].id==='riposte';
   for(const l of S.lives){if(!vis(l.x,l.y,100))continue;
+    if(l.kind==='tree'){if(l.born>0){const k=1-l.born/.7;for(let n=0;n<12;n++){const a=n/12*6.283+S.time*2,r=80*(1-k)+10;circ(l.x+Math.cos(a)*r,l.y-50+Math.sin(a)*r*.6,3,l.c,.8)}}continue}
     if(l.born>0){const k=1-l.born/.7,x=l.x,y=l.y,c=l.c;for(let n=0;n<10;n++){const a=n/10*6.283+S.time*3,r=70*(1-k)+8;circ(x+Math.cos(a)*r,y-26+Math.sin(a)*r*.7,3,c,.8)}
       const w=Math.sin(S.time*40)*2*k;ell(x+w,y-24,22+6*k,30+4*k,mix(c,WHITE,.55),.95);ell(x+w,y-24,22+6*k,30+4*k,c,.35*k,6);for(let n=0;n<Math.floor(k*5);n++)line(x+w-6+n*3,y-38+n*4,x+w+4-n*2,y-26+n*3,1.4,mul(c,.5),.9);circ(x,y-24,40,c,.12+.2*k,18);continue}
-    if(l.owner!=='player')ell(l.x,l.y+3,30,10,[1,.3,.3],.35);
-    const dv=(l.dive||0)>0?(l.dive/.18)*20:0;drawFly(l.x,l.y,l.h-dv,l.fx,l.fy,l.c,l.k,l.t<3&&Math.sin(S.time*20)>0?.45:1)}
+    if(l.owner!=='player')ell(l.x,l.y+3,30,10,[1,.3,.3],.35);const al=l.t<3&&Math.sin(S.time*20)>0?.45:1;
+    if(l.kind==='gator')drawGator(l.x,l.y,l.fx,l.fy,l.c,l.k,al,1,l.dive||0,l.moving);
+    else{const dv=(l.dive||0)>0?(l.dive/.18)*20:0;drawFly(l.x,l.y,l.h-dv,l.fx,l.fy,l.c,l.k,al)}}
   for(const u of S.undoFx){const k=u.t/u.max;
     if(u.kind==='burst'){if(!vis(u.x,u.y,220))continue;const y=u.y-30;circ(u.x,y,130*(1-k)+20,u.c,.18*(1-k),40);
       for(let n=0;n<18;n++){const a=n/18*6.283+.2,r0=150*(1-k)+14,r1=r0+40*(1-k)+6;line(u.x+Math.cos(a)*r1,y+Math.sin(a)*r1*.8,u.x+Math.cos(a)*r0,y+Math.sin(a)*r0*.8,2.6,n%2?u.c:WHITE,.9*(1-k*k))}
@@ -2210,8 +2275,9 @@ function drawPowers(){const p=S.player;
     else if(u.kind==='ghost'){if(!vis(u.x0,u.y0,300))continue;drawPerson(u.x0,u.y0,mix(u.look.shirt,WHITE,.7),mix(u.look.hair,WHITE,.7),u.fx,u.fy,0,false,.55*(1-k),0,false);
       for(let n=0;n<9;n++){const q=((k*1.6+n/9)%1);circ(u.x0+(u.x1-u.x0)*q,u.y0-24+(u.y1-u.y0)*q,3.2,u.c,.85*(1-k))}
       ring(u.x1,u.y1-28,46*(1-k)+6,2.5,u.c,1-k);circ(u.x1,u.y1-28,26,WHITE,.25*(1-k),10)}
-    else if(u.kind==='unfly'){const q=Math.min(1,k*1.3),x=u.x0+(u.x1-u.x0)*q,y=u.y0+(u.y1-u.y0)*q;drawFly(x,y+34,34,1,0,u.c,u.k,1-k,1.25*(1-q*.85));
-      for(let n=0;n<8;n++){const a=n/8*6.283+k*6;circ(x+Math.cos(a)*30*(1-k),y+Math.sin(a)*20*(1-k),2.5,u.c,1-k)}}}
+    else if(u.kind==='unlife'){const q=Math.min(1,k*1.3),x=u.x0+(u.x1-u.x0)*q,y=u.y0+(u.y1-u.y0)*q,sc=1-q*.85;
+      if(u.life==='tree')drawLifeTree(x,y,u.c,u.k,1-k,Math.max(.05,1-k));else if(u.life==='gator')drawGator(x,y,u.fx,u.fy,u.c,u.k,1-k,sc);else drawFly(x,y,u.h*(1-q),u.fx,u.fy,u.c,u.k,1-k,1.25*sc);
+      for(let n=0;n<8;n++){const a=n/8*6.283+k*6;circ(x+Math.cos(a)*30*(1-k),y-20+Math.sin(a)*20*(1-k),2.5,u.c,1-k)}}}
   if(p&&p.dead<=0&&STANDS[p.si].id==='best'){const ev=undoWindow(p);if(ev.length){const W=durOf(STANDS[p.si])||5,fr=Math.max(0,1-(S.time-ev[ev.length-1].t)/W),n=Math.ceil(24*fr),c=p.abilCd<=0?STANDS[p.si].c:[.6,.6,.65];
       for(let i=0;i<n;i++){const a=-Math.PI/2+i/24*6.283;circ(p.x+Math.cos(a)*46,p.y-30+Math.sin(a)*40,3,c,.85)}}}
   for(const e of S.npcs)if(e.rewind&&vis(e.x,e.y,150)){const R=e.rewind;for(let i=0;i<R.pts.length;i+=4){const q=R.pts[i];circ(q.x,q.y-24,9,R.c,.22,6)}clockGlyph(e.x,e.y-70,R.c)}
@@ -2309,6 +2375,7 @@ function drawBuilding(b){
 function drawTree(t){
   if(t.popT>0){const k=t.popT/.35;circ(t.x,t.y-20,40*(1-k)+10,BEc().c,.35*k,14)}
   switch(t.kind){
+  case 'lifetree':{const l=t.life,g=l&&l.born>0?Math.max(.05,1-l.born/.7):1,al=l&&l.t<3&&Math.sin(S.time*20)>0?.55:1;drawLifeTree(t.x,t.y,t.c,t.k,al,g);if(l&&l.owner!=='player')ell(t.x,t.y+4,40,12,[1,.3,.3],.3);return}
   case 'sugar':{ell(t.x+8,t.y+6,70,24,BLACK,.2);box(t.x,t.y-18,60,40,[.86,.86,.88],1,6);box(t.x,t.y-38,60,40,[.98,.98,1],1,6);for(let k=0;k<3;k++)star(t.x-18+k*18,t.y-40+(k%2)*8,4,WHITE,.6+.4*Math.sin(S.time*3+k+t.h*9));return}
   case 'cookie':{const c=t.hitT>0?[1,.9,.75]:[.78,.54,.28];ell(t.x+5,t.y+4,44,16,BLACK,.25);ell(t.x,t.y-8,44,30,mul(c,.85));ell(t.x,t.y-12,40,26,c);for(let k=0;k<5;k++){const a=k*1.3+t.h*6;circ(t.x+Math.cos(a)*11,t.y-12+Math.sin(a)*7,3,[.3,.18,.1])}return}
   case 'knob':{const off=S_FX.stoveOff>0,a=off?-1.6:.4;ell(t.x+5,t.y+5,70,24,BLACK,.3);circ(t.x,t.y-14,34,[.25,.25,.28]);circ(t.x,t.y-18,28,[.75,.76,.8]);line(t.x,t.y-18,t.x+Math.cos(a)*24,t.y-18+Math.sin(a)*24,6,off?[.3,.7,1]:[1,.35,.2]);return}
@@ -2545,8 +2612,8 @@ function updateHUD(){const p=S.player;if(!p)return;const st=STANDS[p.si];
   if(st.id==='foudre'&&!p.active&&!p.wire)txt='Forme électrique · '+(wireNearest(p.x,p.y,110)?'câble à portée':'rejoins un câble ou une prise');
   if(st.id==='ventriloque')txt='Leurres '+S.decoys.filter(d=>d.owner==='player').length+'/2 · frappe dans le dos';
   if(st.id==='mainbasse'&&(p.extraArm>0||p.extraLeg>0))txt=p.extraArm>0?'Troisième bras · '+Math.ceil(p.extraArm)+' s':'Jambe de rechange · '+Math.ceil(p.extraLeg)+' s';
-  if(st.id==='best'){const ev=undoWindow(p),W=durOf(st)||5,fly=S.lives.some(l=>l.owner==='player');
-    txt=(playerFrozen()&&p.abilCd<=0?'Figé ! K pour annuler l\'arrêt du temps':ev.length?(p.abilCd<=0?'K : annuler '+ev.length+' action'+(ev.length>1?'s':'')+' · '+Math.max(0,W-(S.time-ev[ev.length-1].t)).toFixed(1)+' s':'Annulation en recharge'):'Annulation · rien à annuler')+' · '+(fly?'L : annuler la mouche':'Mouche : '+((p.lifeCd||0)>0?Math.ceil(p.lifeCd)+' s':'L'))}
+  if(st.id==='best'){const ev=undoWindow(p),W=durOf(st)||5,mine=S.lives.find(l=>l.owner==='player');
+    txt=(playerFrozen()&&p.abilCd<=0?'Figé ! K pour annuler l\'arrêt du temps':ev.length?(p.abilCd<=0?'K : annuler '+ev.length+' action'+(ev.length>1?'s':'')+' · '+Math.max(0,W-(S.time-ev[ev.length-1].t)).toFixed(1)+' s':'Annulation en recharge'):'Annulation · rien à annuler')+' · '+(mine?'L : annuler '+(mine.kind==='tree'?'l\'arbre':mine.kind==='gator'?'l\'alligator':'la mouche'):'Vie : '+((p.lifeCd||0)>0?Math.ceil(p.lifeCd)+' s':'L pour choisir'))}
   if(st.id==='horloge')txt=playerFrozen()&&S.ts.by&&S.ts.by.name&&p.abilCd<=0?'Figé ! K pour rembobiner '+S.ts.by.name:'Rembobinage forcé · K sur l\'ennemi le plus proche';
   if(st.id==='kleptomane')txt=p.weapon?(p.weapon.kind==='gun'?'Pistolet volé · '+p.weapon.n+' balles · J pour tirer':'Épée volée · '+p.weapon.n+' coups · J pour frapper'):'Vol à la tire · K près d\'un ennemi';
   if(st.id==='paratonnerre'&&p.rodT>0&&p.rod)txt='Paratonnerre sur '+p.rod.name+' · '+Math.ceil(p.rodT)+' s';
@@ -2569,7 +2636,7 @@ function updateHUD(){const p=S.player;if(!p)return;const st=STANDS[p.si];
 /* ================= LOOP ================= */
 let last=performance.now(),menuAng=0;
 function frame(now){
-  let dt=Math.min(.05,(now-last)/1000);last=now;if(S.slowmo>0){S.slowmo-=dt;dt*=.3}S.time+=dt;
+  let dt=Math.min(.05,(now-last)/1000);last=now;if(S.mode==='play'&&S.paused)dt=0;if(S.slowmo>0){S.slowmo-=dt;dt*=.3}S.time+=dt;
   if(S.mode==='menu'){menuAng+=dt*.05;S_FX.mech+=dt;S.cam.x=1800+Math.cos(menuAng)*720;S.cam.y=1800+Math.sin(menuAng*1.3)*600;for(const e of S.npcs)updateNPC(e,dt)}
   else if(!S.paused){updatePlayer(dt);for(const e of S.npcs)updateNPC(e,dt);updateWorld(dt);updateMap(dt);updatePowers(dt);updateLives(dt);recordTime(dt);
     const p=S.player;const fo=p.pos||p;const tx=fo.x+fo.fx*30,ty=fo.y-30+fo.fy*24;const k=1-Math.pow(.002,dt);S.cam.x+=(tx-S.cam.x)*k;S.cam.y+=(ty-S.cam.y)*k}
@@ -2604,13 +2671,13 @@ function startGame(si){
   loadMap(MAPI);miniStatic=null;S.pickups.length=0;
   initAudio();preloadOst();S.paused=false;lastAbTxt='';S.mode='play';S.player=makePlayer(si);S.ts={active:0,by:null};Object.assign(S.vis,{amount:0,r:0,cx:0,cy:0,t:-1,end:-1,flash:0});S.slowmo=0;
   S.npcs=spawnNPCs(st.id);
-  S.total=S.npcs.filter(e=>!e.grunt).length;S.defeated=0;S.won=false;S.proj.length=0;S.parts.length=0;S.texts.length=0;S.vortex.length=0;S.bolts.length=0;S.markers.length=0;S.bumpers.length=0;S.decoys.length=0;S.lives.length=0;S.undoFx.length=0;S.birds.length=0;S.rings.length=0;S.beads.length=0;S.ink.length=0;S.cuts.length=0;S.eshadows.length=0;S.pshadow=null;S.magnet=null;
+  S.total=S.npcs.filter(e=>!e.grunt).length;S.defeated=0;S.won=false;S.proj.length=0;S.parts.length=0;S.texts.length=0;S.vortex.length=0;S.bolts.length=0;S.markers.length=0;S.bumpers.length=0;S.decoys.length=0;S.lives.length=0;S.undoFx.length=0;S.lifePick=false;{const lp=$('#lifePick');if(lp)lp.hidden=true}S.birds.length=0;S.rings.length=0;S.beads.length=0;S.ink.length=0;S.cuts.length=0;S.eshadows.length=0;S.pshadow=null;S.magnet=null;
   S.cam.x=S.player.x;S.cam.y=S.player.y-30;startMusic();
   $('#menu').hidden=true;$('#hud').hidden=false;
   $('#hName').textContent=st.name;$('#hName').style.color=rgb(st.c);$('#hAb').textContent=st.ab;$('#bAb').innerHTML=st.ab.split(' ')[0].toUpperCase().replace(/(.{5})/,'$1<br>');
   updateCount();
-  $('#bTp').hidden=!['ancre','pinball','plastic','best'].includes(st.id);$('#bTp').innerHTML=st.id==='best'?'MOU<br>CHE':st.id==='pinball'?'FLIP<br>PER':st.id==='plastic'?'CLA<br>QUE':'TÉLÉ<br>PORT';
-  $('#hint').innerHTML='<kbd>ZQSD</kbd>/<kbd>WASD</kbd>/<kbd>↑↓←→</kbd> marcher · <kbd>J</kbd> ou <kbd>Espace</kbd> rafale · '+(st.id==='best'?'<kbd>K</kbd> annuler ce que tu viens de subir · <kbd>L</kbd> mouche':st.id==='ancre'?'<kbd>K</kbd> marqueur · <kbd>L</kbd> téléport':st.id==='pinball'?'<kbd>K</kbd> bumper · <kbd>L</kbd> flipper':st.id==='plastic'?'<kbd>K</kbd> billes · <kbd>L</kbd> claquer des doigts':'<kbd>K</kbd> ou <kbd>Maj</kbd> pouvoir')+' · <kbd>M</kbd> son · <kbd>Échap</kbd> pause';
+  $('#bTp').hidden=!['ancre','pinball','plastic','best'].includes(st.id);$('#bTp').innerHTML=st.id==='best'?'VIE':st.id==='pinball'?'FLIP<br>PER':st.id==='plastic'?'CLA<br>QUE':'TÉLÉ<br>PORT';
+  $('#hint').innerHTML='<kbd>ZQSD</kbd>/<kbd>WASD</kbd>/<kbd>↑↓←→</kbd> marcher · <kbd>J</kbd> ou <kbd>Espace</kbd> rafale · '+(st.id==='best'?'<kbd>K</kbd> annuler ce que tu viens de subir · <kbd>L</kbd> créer une vie (arbre, mouche, alligator)':st.id==='ancre'?'<kbd>K</kbd> marqueur · <kbd>L</kbd> téléport':st.id==='pinball'?'<kbd>K</kbd> bumper · <kbd>L</kbd> flipper':st.id==='plastic'?'<kbd>K</kbd> billes · <kbd>L</kbd> claquer des doigts':'<kbd>K</kbd> ou <kbd>Maj</kbd> pouvoir')+' · <kbd>M</kbd> son · <kbd>Échap</kbd> pause';
   if(matchMedia('(pointer: coarse)').matches){$('#touch').hidden=false;$('#hint').hidden=true}
   burst(S.player.sx,S.player.sy-36,30,st.c,300,7,.9);
   banner('Ton Stand s\'éveille',st.name,st.ab+' — '+st.desc,st.c);
@@ -2654,14 +2721,14 @@ function setPause(v){if(S.mode!=='play')return;S.paused=v;$('#pause').hidden=!v;
 function toMenu(){
   stopMusic();stopAllOst();S.paused=false;$('#pause').hidden=true;$('#settings').hidden=true;S.mode='menu';S.player=null;
   loadMap(MAPI);miniStatic=null;S.pickups.length=0;
-  S.bumpers.length=0;S.decoys.length=0;S.lives.length=0;S.undoFx.length=0;S.birds.length=0;S.rings.length=0;S.beads.length=0;S.ink.length=0;S.cuts.length=0;S.eshadows.length=0;S.pshadow=null;S.magnet=null;S.npcs=spawnNPCs(null);S.proj.length=0;S.parts.length=0;S.texts.length=0;S.vortex.length=0;S.bolts.length=0;S.markers.length=0;
+  S.bumpers.length=0;S.decoys.length=0;S.lives.length=0;S.undoFx.length=0;S.lifePick=false;{const lp=$('#lifePick');if(lp)lp.hidden=true}S.birds.length=0;S.rings.length=0;S.beads.length=0;S.ink.length=0;S.cuts.length=0;S.eshadows.length=0;S.pshadow=null;S.magnet=null;S.npcs=spawnNPCs(null);S.proj.length=0;S.parts.length=0;S.texts.length=0;S.vortex.length=0;S.bolts.length=0;S.markers.length=0;
   S.ts={active:0,by:null};Object.assign(S.vis,{amount:0,r:0,t:-1,end:-1,flash:0});S.shake=0;
   $('#hud').hidden=true;$('#touch').hidden=true;$('#menu').hidden=false;$('#banner').innerHTML='';keys.clear();touchRush=false;
   if(AC&&AC.state==='suspended')AC.resume();
 }
 let setStand=0;
 const fmtV=(v,u)=>u==='n'?String(Math.round(v)):u==='%'?Math.round(v*100)+' %':u==='×'?'×'+(+v).toFixed(2).replace(/0$/,'').replace(/\.0$/,''):(+v).toFixed(1)+' s';
-const NOTES={best:"Quand tu subis une action (dégâts, membre arraché, arme volée, rembobinage, paratonnerre…), tu as la durée de la fenêtre pour appuyer sur K : toutes les actions subies pendant cette fenêtre sont annulées (santé et membres rendus) et leurs auteurs reviennent une seconde en arrière, étourdis. K brise aussi un arrêt du temps ennemi. L donne vie à une mouche (une seule à la fois) qui pique tes ennemis pendant 18 secondes ; toute attaque contre elle est annulée. L de nouveau annule cette vie : la mouche disparaît et, si elle venait d'un objet, elle redevient cet objet là où elle se trouve.",horloge:"K vise l'ennemi le plus proche (portée moyenne). Il est ramené le long de son propre chemin jusqu'à sa position d'il y a quelques secondes. Il ne récupère ni santé ni membre, et son attaque ou son pouvoir en cours est annulé.",kleptomane:"Près d'un sbire, K lui vole son arme : le pistolet donne 6 balles, l'épée 8 coups, et J s'en sert à la place de la rafale. Près d'un utilisateur de Stand, K lui vole son Stand 6 secondes et te rend ta rafale.",
+const NOTES={best:"Quand tu subis une action (dégâts, membre arraché, arme volée, rembobinage, paratonnerre…), tu as la durée de la fenêtre pour appuyer sur K : toutes les actions subies pendant cette fenêtre sont annulées (santé et membres rendus) et leurs auteurs reviennent une seconde en arrière, étourdis. K brise aussi un arrêt du temps ennemi. L met le jeu en pause et te laisse choisir une vie (une seule à la fois, 18 secondes) : un arbre statique derrière lequel te cacher (les ennemis te perdent de vue et leurs tirs s'y arrêtent), une mouche qui vole et pique (3 dégâts) ou un alligator lent qui mord (5 dégâts). Toute attaque contre la mouche ou l'alligator est annulée. L de nouveau annule cette vie : si elle venait d'un objet, elle redevient cet objet là où elle se trouve.",horloge:"K vise l'ennemi le plus proche (portée moyenne). Il est ramené le long de son propre chemin jusqu'à sa position d'il y a quelques secondes. Il ne récupère ni santé ni membre, et son attaque ou son pouvoir en cours est annulé.",kleptomane:"Près d'un sbire, K lui vole son arme : le pistolet donne 6 balles, l'épée 8 coups, et J s'en sert à la place de la rafale. Près d'un utilisateur de Stand, K lui vole son Stand 6 secondes et te rend ta rafale.",
   paratonnerre:"K désigne l'ennemi le plus proche (portée moyenne). Tant que le détournement dure, chaque coup ou balle qui devait te toucher le frappe à ta place.",ventriloque:"K pose un leurre (deux au maximum) : les ennemis proches le prennent pour toi. Frappe-les dans le dos pendant ce temps pour doubler tes dégâts.",
   mainbasse:"K arrache un membre à l'ennemi le plus proche. S'il te manque un membre, il est greffé ; sinon tu gagnes 12 s de troisième bras (rafale plus forte) ou de jambe de rechange (plus rapide).",
   riposte:"K ouvre une fenêtre de parade très courte. Si un coup ou une balle t'atteint pendant cette fenêtre, le temps ralentit, tu contre-attaques et la parade est aussitôt disponible.",
@@ -2676,7 +2743,7 @@ function renderSettings(){
   $('#setBody').innerHTML=`
   <section class="set-sec"><h3>Pouvoir</h3>
     <label class="fld" for="s-stand"><span>Stand</span><select id="s-stand">${STANDS.map((s,i)=>ENABLED.has(s.id)?`<option value="${i}"${i===setStand?' selected':''}>${s.name} · ${s.ab}</option>`:'').join('')}</select></label>
-    ${durHtml}${slider('s-cd','Recharge',a.cd,0,40,.5,'s')}${a.cd2!=null?slider('s-cd2','Recharge de la mouche (L)',a.cd2,0,40,.5,'s'):''}
+    ${durHtml}${slider('s-cd','Recharge',a.cd,0,40,.5,'s')}${a.cd2!=null?slider('s-cd2','Recharge de la création de vie (L)',a.cd2,0,40,.5,'s'):''}
     <p class="note">Les ennemis qui portent ce Stand utilisent exactement les mêmes réglages de durée et de recharge.</p>
     <p class="note">${NOTES[st.id]?NOTES[st.id]:st.id==='ancre'?"K pose un marqueur (3 au maximum, le plus ancien est remplacé). L te téléporte au marqueur suivant. La recharge s'applique à la téléportation.":CANCEL.has(st.id)?"Ce pouvoir peut être arrêté avant la fin : appuie de nouveau sur K (ou sur le bouton Pouvoir). La recharge complète démarre dès qu'il s'arrête, que tu l'aies coupé ou qu'il soit arrivé au bout.":"La recharge démarre dès que le pouvoir est lancé."}</p>
   </section>

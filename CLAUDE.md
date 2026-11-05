@@ -63,7 +63,7 @@ Les sections sont repérables par leurs commentaires `/* ===== … ===== */` et 
 
 ## Contenu actuel
 
-- **Stands jouables** (`ENABLED`) : Chrono Noir (arrêt du temps), Best Experience (annulation après coup : chaque action subie est notée dans `undoLog` via `logUndo`, et K pendant la « fenêtre » — la durée réglée — annule tout avec `bestUndo` ; L donne vie à une mouche unique, L de nouveau l'annule ; seconde recharge `cd2`), Horloge Inverse (rembobine un ennemi, brise un arrêt du temps), Kleptomane, Paratonnerre, Main Basse, Riposte, Fil d'Ariane, Retour de Bâton, Coup de Dés. Chacun a un porteur ennemi dans `USERS`.
+- **Stands jouables** (`ENABLED`) : Chrono Noir (arrêt du temps), Best Experience (annulation après coup : chaque action subie est notée dans `undoLog` via `logUndo`, et K pendant la « fenêtre » — la durée réglée — annule tout avec `bestUndo` ; L met en pause et ouvre `#lifePick` pour choisir une vie (`LIFE` : arbre-abri statique `lifetree` qui coupe la vue via `lifeCover`, mouche 3 dégâts, alligator lent 5 dégâts) ; une seule à la fois, L de nouveau l'annule ; seconde recharge `cd2`), Horloge Inverse (rembobine un ennemi, brise un arrêt du temps), Kleptomane, Paratonnerre, Main Basse, Riposte, Fil d'Ariane, Retour de Bâton, Coup de Dés. Chacun a un porteur ennemi dans `USERS`.
 - **Cartes** (`MAPS`) : `manor` Manoir Brisebois (passages secrets), `clock` Beffroi des Rouages (horloge géante), `kitchen` La Cuisine des Géants, `chess` Grand Échiquier.
 - **Ennemis** : utilisateurs de Stand + sbires (épée, pistolet), nombre réglable ; tous s'affrontent entre eux ; perte de membres.
 

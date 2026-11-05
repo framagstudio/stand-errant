@@ -36,6 +36,7 @@ Tous ces Stands codés puis refusés restent dans le code, désactivés (hors de
 9. Fichiers de contexte pour Claude (`CLAUDE.md`, skills, outils de test).
 10. Best Experience (demandé par Anthony, inspiré de Giorno Giovanna) : K annule toute action contre soi (l'attaquant revient une seconde en arrière, étourdi ; brise aussi un arrêt du temps), L donne vie à une créature protégée par l'annulation. Anthony préfère une seule vie à la fois, que L annule ensuite (l'objet revient, là où se trouve la mouche).
 11. Best Experience revu : Anthony trouvait les animations « pourries » et préférait annuler **après coup**. K annule désormais ce qu'on vient de subir pendant une fenêtre réglable (5 s par défaut : dégâts, membre arraché, arme volée, rembobinage, paratonnerre). Nouvelles animations (rayons qui convergent, flash, fantôme de l'attaquant). La créature est une **mouche**.
+12. Création de vie au choix : L met le jeu en pause et propose arbre (abri statique pour se cacher), mouche (3 dégâts, vole) ou alligator (5 dégâts, lent). Anthony trouvait 7 dégâts trop forts. La vie annulée redevient l'objet d'origine là où elle se trouve.
 
 ## Questions ouvertes
 
