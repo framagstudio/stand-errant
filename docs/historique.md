@@ -4,7 +4,7 @@ Ce qui a été construit, ce qu'Anthony a aimé et ce qu'il a refusé. À lire a
 
 ## Ce qu'Anthony aime
 
-- **Les pouvoirs spectaculaires et ceux qui tordent les règles**, surtout autour du **temps** : Chrono Noir (arrêt du temps), Horloge Inverse (rembobiner un ennemi), Retour de Bâton (revenir 3 s en arrière).
+- **Les pouvoirs spectaculaires et ceux qui tordent les règles**, surtout autour du **temps** : Chrono Noir (arrêt du temps), Horloge Inverse (rembobiner un ennemi), Retour de Bâton (revenir 3 s en arrière), Best Experience (annulation d'action, création de vie).
 - **Les cartes très originales avec beaucoup d'interactions** : le Beffroi des Rouages, le Grand Échiquier et La Cuisine des Géants ont plu (« tu as fait du beau boulot »).
 - Les mécaniques qui se combinent : ennemis qui se battent entre eux, membres qu'on perd, objets des cartes qu'on retourne contre les ennemis.
 - Des réglages partout (durée et recharge de chaque pouvoir, nombre d'ennemis par type), et que **les ennemis suivent les mêmes réglages**.
@@ -32,7 +32,9 @@ Tous ces Stands codés puis refusés restent dans le code, désactivés (hors de
 5. Remise à zéro : seul Chrono Noir conservé ; ajout de Main Basse, Riposte, Fil d'Ariane, Retour de Bâton, Coup de Dés, Kleptomane, Paratonnerre.
 6. Nouvelles cartes Manoir Brisebois et Beffroi des Rouages ; mêlée générale entre ennemis ; navigation des ennemis.
 7. Horloge Inverse ; cartes Grand Échiquier et La Cuisine des Géants.
-8. Corrections : écran resté en noir et blanc (arrêt du temps déclenché dans le menu), Horloge Inverse utilisable pendant un arrêt du temps ennemi pour le briser, ennemis alignés sur les réglages, silhouette fantôme de destination pour Horloge Inverse.
+8. Fichiers de contexte pour Claude (`CLAUDE.md`, skills, outils de test).
+9. Best Experience (demandé par Anthony, inspiré de Giorno Giovanna) : K annule toute action contre soi (l'attaquant revient une seconde en arrière, étourdi ; brise aussi un arrêt du temps), L donne vie à une créature protégée par l'annulation.
+10. Corrections : écran resté en noir et blanc (arrêt du temps déclenché dans le menu), Horloge Inverse utilisable pendant un arrêt du temps ennemi pour le briser, ennemis alignés sur les réglages, silhouette fantôme de destination pour Horloge Inverse.
 
 ## Questions ouvertes
 

@@ -57,11 +57,12 @@ Les sections sont repérables par leurs commentaires `/* ===== … ===== */` et 
 - **Props** (`trees`) : `kind` détermine le dessin (`drawTree`) et l'interaction (`PROPS` + `propHit`). `ghost:true` = pas de collision et pas trié dans la scène ; `mv` = objet en mouvement (non solide).
 - **Effets des cartes sur les personnages** : `mechEnts()` (joueur + ennemis actifs) et `mechHit(ent, dégâts, kx, ky, couleur, étourdissement)`.
 - **Stands désactivés** : beaucoup de Stands existent encore dans le code mais sont retirés de `ENABLED` à la demande d'Anthony. Ne pas les réactiver sans qu'il le demande.
+- Ondes de choc : `S.rings` (rayon négatif = anneau qui se resserre), mises à jour dans `updatePowers` et dessinées dans `drawPowers`.
 - Les textes affichés utilisent `ftext()` (dans le monde), `banner()` (bandeau), `say()` (bulle).
 
 ## Contenu actuel
 
-- **Stands jouables** (`ENABLED`) : Chrono Noir (arrêt du temps), Horloge Inverse (rembobine un ennemi, brise un arrêt du temps), Kleptomane, Paratonnerre, Main Basse, Riposte, Fil d'Ariane, Retour de Bâton, Coup de Dés. Chacun a un porteur ennemi dans `USERS`.
+- **Stands jouables** (`ENABLED`) : Chrono Noir (arrêt du temps), Best Experience (K annulation d'action, L création de vie ; seconde recharge `cd2` dans `ABIL_DEF`), Horloge Inverse (rembobine un ennemi, brise un arrêt du temps), Kleptomane, Paratonnerre, Main Basse, Riposte, Fil d'Ariane, Retour de Bâton, Coup de Dés. Chacun a un porteur ennemi dans `USERS`.
 - **Cartes** (`MAPS`) : `manor` Manoir Brisebois (passages secrets), `clock` Beffroi des Rouages (horloge géante), `kitchen` La Cuisine des Géants, `chess` Grand Échiquier.
 - **Ennemis** : utilisateurs de Stand + sbires (épée, pistolet), nombre réglable ; tous s'affrontent entre eux ; perte de membres.
 

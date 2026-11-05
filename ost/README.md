@@ -30,6 +30,7 @@ Les ennemis utilisent les mêmes fichiers quand ils déclenchent leur pouvoir, a
 | `coup-de-des/` | Lancer de dé (Coup de Dés) | Joué en entier à chaque lancer. |
 | `kleptomane/` | Vol à la tire (Kleptomane) | Joué en entier quand tu voles une arme ou un Stand. |
 | `paratonnerre/` | Détournement (Paratonnerre) | Joué quand tu désignes l'ennemi qui servira de paratonnerre. |
+| `best-experience/` | Annulation (Best Experience) | Joué quand l'annulation démarre, coupé quand elle se termine. |
 | `horloge-inverse/` | Rembobinage forcé (Horloge Inverse) | Joué en entier quand tu remontes le temps d'un ennemi. |
 | `rafale/` | Rafale (Toutes les Stands) | Joué en boucle tant que tu maintiens la rafale, coupé dès que tu la relâches. Commun à tous les Stands. |
 

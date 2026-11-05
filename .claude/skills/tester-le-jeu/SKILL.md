@@ -27,7 +27,11 @@ Colonnes affichées : temps de calcul par image (hors rendu GPU), ennemis hors j
 
 ## Reproduire un bug précis
 
-Copier `tools/headless-scenario.js` dans le dossier scratchpad, le modifier pour mettre en place la situation (par exemple : `MAPI=…; startGame(SI('horloge')); const e=S.npcs.find(…); e.x=…; useAbility(S.player);`), faire avancer la boucle avec `frame(t)` et afficher l'état utile avec `console.log`. Pour l'exécuter, adapter `tools/headless.cjs` pour qu'il lise ce fichier à la place (ou passer par une copie).
+Écrire un petit scénario (dans le dossier scratchpad) en s'inspirant de `tools/headless-scenario.js` : mettre en place la situation (par exemple `MAPI=…; startGame(SI('horloge')); const e=S.npcs.find(…); e.x=…; useAbility(S.player);`), faire avancer la boucle avec `frame(t)` (t en millisecondes, +16.7 par image) et afficher l'état utile avec `console.log`. Commencer par `device=__mk();gctx=__mk();` et finir par `process.exit(0)`. Puis :
+
+```bash
+HEADLESS_SCENARIO=/chemin/scenario.js node tools/headless.cjs
+```
 
 Points de vigilance déjà rencontrés :
 - un pouvoir ennemi déclenché pendant le menu laissait l'écran en noir et blanc (les pouvoirs ennemis sont désormais bloqués hors partie) ;

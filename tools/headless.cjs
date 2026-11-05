@@ -9,6 +9,7 @@
  *   node tools/headless.cjs --stands chrono,horloge seulement ces Stands (id de STANDS)
  *   node tools/headless.cjs --seconds 10            durée simulée par partie
  *   node tools/headless.cjs --wgsl /tmp/s.wgsl --seconds 0   écrit le shader WGSL généré (pour naga) sans simuler
+ *   HEADLESS_SCENARIO=/chemin/test.js node tools/headless.cjs   exécute un scénario personnalisé (même portée que le jeu)
  *
  * Code de sortie : 0 si tout va bien, 1 si un personnage reste coincé dans un obstacle, 2 si une erreur JS survient.
  */
@@ -26,7 +27,7 @@ for (let i = 0; i < a.length; i++) {
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const m = html.match(/<script>([\s\S]*)<\/script>/);
 if (!m) { console.error('Script introuvable dans index.html'); process.exit(2); }
-const scenario = fs.readFileSync(path.join(__dirname, 'headless-scenario.js'), 'utf8');
+const scenario = fs.readFileSync(process.env.HEADLESS_SCENARIO || path.join(__dirname, 'headless-scenario.js'), 'utf8');
 
 /* ---- bouchons ---- */
 const mk = () => new Proxy(function () {}, {
