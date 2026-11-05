@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node tools/check.cjs:*)",
+      "Bash(node tools/headless.cjs:*)",
+      "Bash(node tools/to-artifact.cjs:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ]
+  }
+}

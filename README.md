@@ -45,3 +45,10 @@ Le dossier [`ost/`](ost/) contient un sous-dossier par pouvoir et un dossier `ra
 ## Technique
 
 Un seul fichier `index.html`, sans dépendance ni étape de build : WebGPU pour le rendu (shaders WGSL), Web Audio pour les sons et la musique.
+
+## Développement
+
+- `node tools/check.cjs` : vérifie la syntaxe, le shader WGSL (avec [naga](https://github.com/gfx-rs/wgpu/tree/trunk/naga)) et joue des parties automatiques sur chaque carte.
+- `node tools/headless.cjs --help` : parties automatiques ciblées (cartes, Stands, durée).
+- `CLAUDE.md`, `.claude/skills/` et `docs/historique.md` : contexte et procédures pour travailler sur le jeu avec Claude (créer un Stand, créer une carte, tester, publier).
+
