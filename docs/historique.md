@@ -34,7 +34,7 @@ Tous ces Stands codés puis refusés restent dans le code, désactivés (hors de
 7. Horloge Inverse ; cartes Grand Échiquier et La Cuisine des Géants.
 8. Corrections : écran resté en noir et blanc (arrêt du temps déclenché dans le menu), Horloge Inverse utilisable pendant un arrêt du temps ennemi pour le briser, ennemis alignés sur les réglages, silhouette fantôme de destination pour Horloge Inverse.
 9. Fichiers de contexte pour Claude (`CLAUDE.md`, skills, outils de test).
-10. Best Experience (demandé par Anthony, inspiré de Giorno Giovanna) : K annule toute action contre soi (l'attaquant revient une seconde en arrière, étourdi ; brise aussi un arrêt du temps), L donne vie à une créature protégée par l'annulation.
+10. Best Experience (demandé par Anthony, inspiré de Giorno Giovanna) : K annule toute action contre soi (l'attaquant revient une seconde en arrière, étourdi ; brise aussi un arrêt du temps), L donne vie à une créature protégée par l'annulation. Anthony préfère une seule vie à la fois, que L annule ensuite (l'objet d'origine revient).
 
 ## Questions ouvertes
 

@@ -269,7 +269,7 @@ const STANDS=[
  {id:'ruche',name:"Ruche d'Ambre",c:[1,.7,.12],k:[.34,.21,.06],cry:'BZZ',crest:'antenna',ab:'Essaim',desc:"Quatre drones-abeilles tournent autour de toi et piquent.",st:{P:'D',V:'A',Po:'B',En:'B',Pr:'B',Pt:'A'},cd:14},
  {id:'pantin',name:'Pantin Pourpre',c:[.88,.2,.36],k:[.98,.84,.55],cry:'GIIII',crest:'strings',ab:'Possession',desc:"Prends le contrôle d'un ennemi proche : fais-le se frapper lui-même, foncer dans les pièges ou cogner ses alliés.",st:{P:'C',V:'B',Po:'A',En:'C',Pr:'A',Pt:'A'},cd:16},
  {id:'ancre',name:'Ancre Nomade',c:[.96,.32,.84],k:[.32,1,.95],cry:'GAKIN',crest:'anchor',ab:'Ancrage',desc:"Pose jusqu'à trois marqueurs dans la ville, puis téléporte-toi sur l'un d'eux en un éclair.",st:{P:'B',V:'B',Po:'B',En:'C',Pr:'A',Pt:'A'},cd:4},
- {id:'best',name:'Best Experience',c:[.62,.95,.82],k:[.98,.52,.58],cry:'MUDA',crest:'sprout',ab:'Annulation',desc:"K annule toute action dirigée contre toi : l'attaquant revient à zéro, à sa position d'avant. L donne vie à une créature qui se bat pour toi et que rien ne peut atteindre.",st:{P:'A',V:'A',Po:'C',En:'A',Pr:'A',Pt:'A'},cd:14},
+ {id:'best',name:'Best Experience',c:[.62,.95,.82],k:[.98,.52,.58],cry:'MUDA',crest:'sprout',ab:'Annulation',desc:"K annule toute action dirigée contre toi : l'attaquant revient à zéro, à sa position d'avant. L donne vie à une créature qui se bat pour toi et que rien ne peut atteindre ; L de nouveau annule cette vie.",st:{P:'A',V:'A',Po:'C',En:'A',Pr:'A',Pt:'A'},cd:14},
  {id:'horloge',name:'Horloge Inverse',c:[.4,.85,.88],k:[.95,.75,.35],cry:'KACHI',crest:'clockface',ab:'Rembobinage forcé',desc:"Remonte le temps d'un ennemi : il revient là où il était quelques secondes plus tôt, sans récupérer sa santé, et son pouvoir est interrompu.",st:{P:'B',V:'B',Po:'A',En:'B',Pr:'B',Pt:'A'},cd:9},
  {id:'kleptomane',name:'Kleptomane',c:[.42,.9,.72],k:[.12,.2,.18],cry:'SURI',crest:'mask',ab:'Vol à la tire',desc:"Vole l'arme d'un sbire pour t'en servir (pistolet ou épée), ou le Stand d'un adversaire pendant quelques secondes.",st:{P:'C',V:'A',Po:'B',En:'C',Pr:'A',Pt:'B'},cd:10},
  {id:'paratonnerre',name:'Paratonnerre',c:[.62,.7,1],k:[1,.9,.3],cry:'GORO',crest:'rod',ab:'Détournement',desc:"Désigne un ennemi : pendant 5 secondes, tous les dégâts que tu devrais prendre le frappent à ta place.",st:{P:'B',V:'C',Po:'A',En:'A',Pr:'B',Pt:'B'},cd:14},
@@ -1835,16 +1835,20 @@ function nullifyPlayer(){const p=S.player;if(!p||p.dead>0||S.time<(p.nullCd||0))
   const h=p.th&&p.th.length?p.th[Math.max(0,p.th.length-10)]:null;if(h){p.x=h.x;p.y=h.y;unstick(p);p.sx=p.x-16;p.sy=p.y-30}
   p.rushing=false;p.kx=p.ky=0;p.stunT=Math.max(p.stunT||0,.6);if(p.th)p.th.length=0;nullFx(p.x,p.y);ftext(p.x,p.y-140,'Ton action est annulée',BEc().c,18,{life:1,max:1,font:FB});sfxAbility('best')}
 const playerNull=()=>{const p=S.player;return p&&p.dead<=0&&p.active&&p.active.id==='best'};
-function createLife(p,st){if((p.lifeCd||0)>0){if(S.time-(p.lifeMsg||0)>.8){p.lifeMsg=S.time;ftext(p.x,p.y-90,'Création de vie dans '+p.lifeCd.toFixed(1)+' s',st.c,15,{life:.8,max:.8,font:FB})}return}
+function createLife(p,st){const mine=S.lives.find(l=>l.owner==='player');if(mine){cancelLife(mine);return}
+  if((p.lifeCd||0)>0){if(S.time-(p.lifeMsg||0)>.8){p.lifeMsg=S.time;ftext(p.x,p.y-90,'Création de vie dans '+p.lifeCd.toFixed(1)+' s',st.c,15,{life:.8,max:.8,font:FB})}return}
   spawnLife(p,'player',st);p.lifeCd=cd2Of(st)}
-function spawnLife(src,owner,st){const own=S.lives.filter(l=>l.owner===owner);if(own.length>=2)own[0].t=0;
+/* Annule une vie créée : la créature disparaît, et si elle venait d'un objet, l'objet revient à sa place. */
+function cancelLife(l){const i=S.lives.indexOf(l);if(i<0)return;S.lives.splice(i,1);nullFx(l.x,l.y);ftext(l.x,l.y-130,'Vie annulée',l.c,18,{life:.9,max:.9,font:FB});
+  if(l.prop){const t=l.prop;t.x=l.px;t.y=l.py;if(t.hp!=null&&t.kind!=='barrel')t.hp=Math.max(t.hp,1);t.fuse=0;t.hitT=0;trees.push(t);NAV.dirty=true;miniStatic=null;for(const e of mechEnts())if(Math.hypot(e.x-t.x,e.y-t.y)<t.r+14)unstick(e)}}
+function spawnLife(src,owner,st){for(const o of S.lives.filter(l=>l.owner===owner))cancelLife(o);
   let src2=null,bd=170;for(const t of trees){if(t.ghost||t.mv||!['crate','cookie','barrel','urn','sugar','rock','pipe'].includes(t.kind))continue;const d=Math.hypot(t.x-src.x,t.y-src.y);if(d<bd){bd=d;src2=t}}
   let x,y;if(src2){x=src2.x;y=src2.y;removeProp(src2);NAV.dirty=true}else{x=src.x+(src.fx||0)*90;y=src.y+(src.fy||1)*90;if(solid(x,y,14)){x=src.x;y=src.y}}
-  S.lives.push({isLife:true,owner,x,y,fx:0,fy:1,t:18,bite:0,anim:0,c:st.c,k:st.k,born:.5,from:src2?src2.kind:null});
+  S.lives.push({isLife:true,owner,x,y,fx:0,fy:1,t:18,bite:0,anim:0,c:st.c,k:st.k,born:.5,from:src2?src2.kind:null,prop:src2,px:src2?src2.x:0,py:src2?src2.y:0});
   burst(x,y-20,26,st.c,260,6,.7,3);ftext(x,y-90,src2?'Prends vie !':'Naissance !',st.c,22,{skew:true,life:.9,max:.9});sfxHourglass()}
 function lifeHostiles(l){const L=[];const p=S.player;if(l.owner!=='player'&&p&&p.dead<=0&&!p.air)L.push(p);for(const e of S.npcs)if(e!==l.owner&&e.state!=='down'&&!(e.invis>0))L.push(e);return L}
 function updateLives(dt){for(let i=S.lives.length-1;i>=0;i--){const l=S.lives[i];if(l.owner!=='player'&&frozenFor(l.owner))continue;if(l.owner==='player'&&playerFrozen())continue;
-    l.t-=dt;l.born-=dt;l.bite-=dt;if(l.t<=0||(l.owner!=='player'&&(!S.npcs.includes(l.owner)||l.owner.state==='down'))){burst(l.x,l.y-20,16,l.c,200,5,.5,3);S.lives.splice(i,1);continue}
+    l.t-=dt;l.born-=dt;l.bite-=dt;if(l.t<=0||(l.owner!=='player'&&(!S.npcs.includes(l.owner)||l.owner.state==='down'))){cancelLife(l);continue}
     if(l.born>0)continue;let T=null,bd=520;for(const h of lifeHostiles(l)){const d=Math.hypot(h.x-l.x,h.y-l.y);if(d<bd){bd=d;T=h}}
     if(!T){const o=l.owner==='player'?S.player:l.owner;if(o&&Math.hypot(o.x-l.x,o.y-l.y)>120){const [mx,my]=navDir(l,o.x,o.y,dt);moveEnt(l,mx*170*dt,my*170*dt,11);l.anim+=dt*10}continue}
     l.fx=(T.x-l.x)/(bd||1);l.fy=(T.y-l.y)/(bd||1);
@@ -2502,7 +2506,7 @@ function updateHUD(){const p=S.player;if(!p)return;const st=STANDS[p.si];
   if(st.id==='foudre'&&!p.active&&!p.wire)txt='Forme électrique · '+(wireNearest(p.x,p.y,110)?'câble à portée':'rejoins un câble ou une prise');
   if(st.id==='ventriloque')txt='Leurres '+S.decoys.filter(d=>d.owner==='player').length+'/2 · frappe dans le dos';
   if(st.id==='mainbasse'&&(p.extraArm>0||p.extraLeg>0))txt=p.extraArm>0?'Troisième bras · '+Math.ceil(p.extraArm)+' s':'Jambe de rechange · '+Math.ceil(p.extraLeg)+' s';
-  if(st.id==='best')txt=(playerFrozen()&&p.abilCd<=0?'Figé ! K pour annuler l\'arrêt du temps':p.active?'Annulation en cours':'Annulation · K')+' · Création de vie : '+((p.lifeCd||0)>0?Math.ceil(p.lifeCd)+' s':'L');
+  if(st.id==='best')txt=(playerFrozen()&&p.abilCd<=0?'Figé ! K pour annuler l\'arrêt du temps':p.active?'Annulation en cours':'Annulation · K')+' · '+(S.lives.some(l=>l.owner==='player')?'L : annuler la vie':'Création de vie : '+((p.lifeCd||0)>0?Math.ceil(p.lifeCd)+' s':'L'));
   if(st.id==='horloge')txt=playerFrozen()&&S.ts.by&&S.ts.by.name&&p.abilCd<=0?'Figé ! K pour rembobiner '+S.ts.by.name:'Rembobinage forcé · K sur l\'ennemi le plus proche';
   if(st.id==='kleptomane')txt=p.weapon?(p.weapon.kind==='gun'?'Pistolet volé · '+p.weapon.n+' balles · J pour tirer':'Épée volée · '+p.weapon.n+' coups · J pour frapper'):'Vol à la tire · K près d\'un ennemi';
   if(st.id==='paratonnerre'&&p.rodT>0&&p.rod)txt='Paratonnerre sur '+p.rod.name+' · '+Math.ceil(p.rodT)+' s';
@@ -2617,7 +2621,7 @@ function toMenu(){
 }
 let setStand=0;
 const fmtV=(v,u)=>u==='n'?String(Math.round(v)):u==='%'?Math.round(v*100)+' %':u==='×'?'×'+(+v).toFixed(2).replace(/0$/,'').replace(/\.0$/,''):(+v).toFixed(1)+' s';
-const NOTES={best:"K lance l'annulation : tant qu'elle dure, toute attaque, balle ou pouvoir ennemi qui te vise est annulé et l'attaquant revient à sa position d'il y a une seconde, étourdi. Elle brise aussi un arrêt du temps ennemi. L donne vie à une créature (deux au maximum) : elle attaque tes ennemis pendant 18 secondes, et toute attaque contre elle est annulée de la même façon.",horloge:"K vise l'ennemi le plus proche (portée moyenne). Il est ramené le long de son propre chemin jusqu'à sa position d'il y a quelques secondes. Il ne récupère ni santé ni membre, et son attaque ou son pouvoir en cours est annulé.",kleptomane:"Près d'un sbire, K lui vole son arme : le pistolet donne 6 balles, l'épée 8 coups, et J s'en sert à la place de la rafale. Près d'un utilisateur de Stand, K lui vole son Stand 6 secondes et te rend ta rafale.",
+const NOTES={best:"K lance l'annulation : tant qu'elle dure, toute attaque, balle ou pouvoir ennemi qui te vise est annulé et l'attaquant revient à sa position d'il y a une seconde, étourdi. Elle brise aussi un arrêt du temps ennemi. L donne vie à une créature (une seule à la fois) : elle attaque tes ennemis pendant 18 secondes, et toute attaque contre elle est annulée de la même façon. L de nouveau annule cette vie : la créature disparaît et, si elle venait d'un objet, l'objet revient à sa place.",horloge:"K vise l'ennemi le plus proche (portée moyenne). Il est ramené le long de son propre chemin jusqu'à sa position d'il y a quelques secondes. Il ne récupère ni santé ni membre, et son attaque ou son pouvoir en cours est annulé.",kleptomane:"Près d'un sbire, K lui vole son arme : le pistolet donne 6 balles, l'épée 8 coups, et J s'en sert à la place de la rafale. Près d'un utilisateur de Stand, K lui vole son Stand 6 secondes et te rend ta rafale.",
   paratonnerre:"K désigne l'ennemi le plus proche (portée moyenne). Tant que le détournement dure, chaque coup ou balle qui devait te toucher le frappe à ta place.",ventriloque:"K pose un leurre (deux au maximum) : les ennemis proches le prennent pour toi. Frappe-les dans le dos pendant ce temps pour doubler tes dégâts.",
   mainbasse:"K arrache un membre à l'ennemi le plus proche. S'il te manque un membre, il est greffé ; sinon tu gagnes 12 s de troisième bras (rafale plus forte) ou de jambe de rechange (plus rapide).",
   riposte:"K ouvre une fenêtre de parade très courte. Si un coup ou une balle t'atteint pendant cette fenêtre, le temps ralentit, tu contre-attaques et la parade est aussitôt disponible.",

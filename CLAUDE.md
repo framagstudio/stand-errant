@@ -62,7 +62,7 @@ Les sections sont repérables par leurs commentaires `/* ===== … ===== */` et 
 
 ## Contenu actuel
 
-- **Stands jouables** (`ENABLED`) : Chrono Noir (arrêt du temps), Best Experience (K annulation d'action, L création de vie ; seconde recharge `cd2` dans `ABIL_DEF`), Horloge Inverse (rembobine un ennemi, brise un arrêt du temps), Kleptomane, Paratonnerre, Main Basse, Riposte, Fil d'Ariane, Retour de Bâton, Coup de Dés. Chacun a un porteur ennemi dans `USERS`.
+- **Stands jouables** (`ENABLED`) : Chrono Noir (arrêt du temps), Best Experience (K annulation d'action, L création d'une vie unique puis L pour l'annuler ; seconde recharge `cd2` dans `ABIL_DEF`), Horloge Inverse (rembobine un ennemi, brise un arrêt du temps), Kleptomane, Paratonnerre, Main Basse, Riposte, Fil d'Ariane, Retour de Bâton, Coup de Dés. Chacun a un porteur ennemi dans `USERS`.
 - **Cartes** (`MAPS`) : `manor` Manoir Brisebois (passages secrets), `clock` Beffroi des Rouages (horloge géante), `kitchen` La Cuisine des Géants, `chess` Grand Échiquier.
 - **Ennemis** : utilisateurs de Stand + sbires (épée, pistolet), nombre réglable ; tous s'affrontent entre eux ; perte de membres.
 
